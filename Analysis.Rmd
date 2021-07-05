@@ -1,30 +1,60 @@
 ---
 title: "Analysis"
-author: "John Clements"
+author: "John Clements_Jingjing Li"
 date: "7/1/2021"
 output: html_document
+  toc: TRUE
 ---
+# Introduction  
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r}
+library (readr)
+library(dplyr)
+library(ggplot2)
 ```
 
-## R Markdown
+# Data manipulation  
+```{r, message=FALSE}
+bikeday <- read_csv("../Bike-Sharing-Dataset/day.csv")
+bikehour <- read_csv("../Bike-Sharing-Dataset/hour.csv")
+bikeday1 <- filter(bikeday,  weekday==1)
+bikehour1 <- filter(bikehour,  weekday==1)
+set.seed(10)
+train_day1 <- sample(1:nrow(bikeday1),size=nrow(bikeday1)*0.7)
+test_day1 <- setdiff(1:nrow(bikeday1), train_day1)
+bikedayTrain1 <- bikeday1[train_day1, ]
+bikedayTest1 <- bikeday1[test_day1, ]
+train_hour1 <- sample(1:nrow(bikehour1),size=nrow(bikehour1)*0.7)
+test_hour1 <- setdiff(1:nrow(bikehour1), train_hour1)
+bikehourTrain1 <- bikehour1[train_hour1, ]
+bikehourTest1 <- bikehour1[test_hour1, ]
+```
+# Summarization  
+```{r}
+#check effect of season on temperature, humidity and windspeed
+bikedayTrain1 %>% group_by(yr,season) %>% summarise(avgtemp = mean (temp), sdtemp = sd (temp), avghum = mean(hum), sdhum = sd (hum), avgwindspd= mean(windspeed),sdwindspd=sd(windspeed) )
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+#compare weather situation of two different years
+yr_weather<- table(bikedayTrain1$yr, bikedayTrain1$weathersit)
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+# compare weather situation of different seasons
+season_weather <- table(bikedayTrain1$season, bikedayTrain1$weathersit)
 
-```{r cars}
-summary(cars)
+#observe on distribution of total bike renter counts
+g1<- ggplot (bikedayTrain1, aes(x=cnt))
+g1 + geom_histogram() + xlab("total bike renter number") + ggtitle("Distribution of total bike renter counts")
+
+g2 <- ggplot(bikedayTrain1, aes(x=temp, y=cnt))
+g2+ geom_point()+ xlab("Normalized temperature") + ylab("Total bike renter number")
+  ggtitle("Effect of temperature on total bike renter counts")
+
+g3 <- ggplot(bikedayTrain1, aes(x=windspeed, y=cnt))
+g3+geom_point()+ xlab("Normalized windspeed") + 
+  ggtitle("Effect of windspeed on total bike renter counts")+ ylab("Total bike renter number")
+
+bikedayTrain1$season <- as.factor(bikedayTrain1$season)
+g4 <- ggplot(bikedayTrain1, aes(x=season, y=cnt))
+
+g4 + geom_boxplot() + scale_x_discrete(labels= c("Winter","Spring","Summer","Fall"))+ ylab("Total bike renter number") + ggtitle("Effect of season on total bike renter counts")
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
