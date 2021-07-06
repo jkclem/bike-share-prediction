@@ -138,7 +138,7 @@ rownames (stat_sum) <-c("lmfit1a","lmfit1b","lmfit1c","lmfit1d","lmfit2a","lmfit
 stat_sum 
 ```
 ## Ensemble tree model
-### bossted tree 
+### boosted tree 
 ```{r}
 set.seed(50)
 gbmGrid <- expand.grid(interaction.depth=4, n.trees = 1000,
