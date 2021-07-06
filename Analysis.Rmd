@@ -137,4 +137,19 @@ stat_sum <- rbind(stat1a,stat1b,stat1c,stat1d,stat2a,stat2b,stat2c,stat3a,stat3b
 rownames (stat_sum) <-c("lmfit1a","lmfit1b","lmfit1c","lmfit1d","lmfit2a","lmfit2b","lmfit2c", "lmfit3a","lmfit3b","lmfit3c","lmfit4a","lmfit4b","lmfit5a","lmfit5b") 
 stat_sum 
 ```
+## Ensemble tree model
+### bossted tree 
+```{r}
+set.seed(50)
+gbmGrid <- expand.grid(interaction.depth=4, n.trees = 1000,
+                   shrinkage=0.1,
+                   n.minobsinnode=10)
+gbmFit <- train (casual ~., data=select(bikedayTrain1, -"weekday"),
+                   method="gbm",
+                   preProcess= c("center", "scale"),
+                   trControl = trainControl(method = "cv",
+                                            number=10),
+                    tuneGrid=gbmGrid)
+gbmFit 
+```
 
