@@ -4,8 +4,7 @@ author: "John Clements and Jingjing Li"
 date: "7/1/2021"
 output: html_document
   toc: TRUE
-params:
-  weekday:
+params:  weekday
 ---
 
 # Introduction  
@@ -218,7 +217,13 @@ reports <- tibble(output_file, params)
 reports
 apply(reports, MARGIN=1, 
     FUN=function(x){
+<<<<<<< HEAD
                     render(input="../Daily Reports/bike-share-prediction.Rmd",
+||||||| 79c0e2b
+                    render(input="../project/bike-share-prediction.Rmd",
+=======
+                    render(input="../bike-share-prediction/Analysis.Rmd",
+>>>>>>> 6869753780f6e0aacc1603a70b36d7ccf2872e1b
                            output_file=x[[1]],params=x[[2]])
     })
 ```
