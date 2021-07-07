@@ -4,7 +4,7 @@ author: "John Clements and Jingjing Li"
 date: "7/1/2021"
 output: html_document
   toc: TRUE
-params:  weekday
+#params:  weekday
 ---
 
 # Introduction  
@@ -181,14 +181,14 @@ knitr::kable(
 
 ```{r}
 #observe on distribution of total bike renter counts
-g1 <- ggplot(bikeDayTrainSubset, aes(x=cnt)) + 
+plot4<- ggplot(bikeDayTrainSubset, aes(x=cnt)) + 
   geom_histogram() + 
   xlab("total bike renter number") + 
   ggtitle("Distribution of total bike renter counts")
 ```
 
 ```{r}
-g1 <- ggplot(bikeDayTrainSubset, aes(x=temp*41, y=cnt)) + 
+plot4 <- ggplot(bikeDayTrainSubset, aes(x=temp*41, y=cnt)) + 
   geom_point(color="blue", alpha=0.5) + 
   geom_smooth(method = 'lm', formula='y ~ poly(x, 2)', color="red") +
   xlab("Temp. (Celsius)") + 
@@ -196,7 +196,7 @@ g1 <- ggplot(bikeDayTrainSubset, aes(x=temp*41, y=cnt)) +
   ggtitle("Bike Rentals vs. Temp.")
 
 #Effect of temperature on total bike renter number
-g2 <- ggplot(bikeDayTrainSubset, aes(x=hum*100, y=cnt)) + 
+plot5 <- ggplot(bikeDayTrainSubset, aes(x=hum*100, y=cnt)) + 
   geom_point(color="blue", alpha=0.5) + 
   geom_smooth(method = 'lm', formula='y ~ poly(x, 2)', color="red") +
   xlab("Humidity") + 
@@ -204,7 +204,7 @@ g2 <- ggplot(bikeDayTrainSubset, aes(x=hum*100, y=cnt)) +
   ggtitle("Bike Rentals vs. Humidity")
 
 #Effect of windspeed on total bike renter number
-g3 <- ggplot(bikeDayTrainSubset, aes(x=windspeed*67, y=cnt)) + 
+plot6 <- ggplot(bikeDayTrainSubset, aes(x=windspeed*67, y=cnt)) + 
   geom_point(color="blue", alpha=0.5) + 
   geom_smooth(method = 'lm', formula='y ~ poly(x, 2)', color="red") +
   xlab("Wind Speed (km/h)") + 
@@ -212,7 +212,7 @@ g3 <- ggplot(bikeDayTrainSubset, aes(x=windspeed*67, y=cnt)) +
   ggtitle("Bike Rentals vs. Wind Speed")
 
 #Effect of season on total bike renter number
-g4 <- ggplot(bikeDayTrainSubset, aes(x=season, y=cnt, color=season)) + 
+plot7 <- ggplot(bikeDayTrainSubset, aes(x=season, y=cnt, color=season)) + 
   geom_boxplot() + 
   geom_jitter() + 
   xlab("Season") + 
@@ -220,13 +220,46 @@ g4 <- ggplot(bikeDayTrainSubset, aes(x=season, y=cnt, color=season)) +
   ggtitle("Bike Rentals by Season") +
   theme(legend.position="none")
 
-plot_grid(g1, g2, g3, g4, ncol=2)
+plot_grid(plot4, plot5, plot6, plot7, ncol=2)
 ```
+
+```{r}
+plot8 <- ggplot(bikeDayTrainSubset, aes(x=weathersit, y=cnt, 
+                                        color=weathersit)) + 
+  geom_boxplot() + 
+  geom_jitter() + 
+  xlab("Weather Situation") + 
+  ylab("Bike Rentals") + 
+  ggtitle("Bike Rentals by Weather") +
+  theme(legend.position="none")
+
+plot9 <- ggplot(bikeDayTrainSubset, aes(x=holiday, y=cnt, color=holiday)) + 
+  geom_boxplot() + 
+  geom_jitter() + 
+  xlab("Holiday") + 
+  ylab("Bike Rentals") + 
+  ggtitle("Bike Rentals by Holiday") +
+  theme(legend.position="none")
+
+plot10 <- ggplot(bikeDayTrainSubset, aes(x=workingday, y=cnt, 
+                                        color=workingday)) + 
+  geom_boxplot() + 
+  geom_jitter() + 
+  xlab("Working Day") + 
+  ylab("Bike Rentals") + 
+  ggtitle("Bike Rentals by Working Day") +
+  theme(legend.position="none")
+
+plot_grid(plot8, plot9, plot10, ncol=2)
+```
+
+
 # Modeling
 
 ## Linear model 
 
 ### 2 
+
 
 ```{r}
 bikeDayTrainSubset$season <- as.numeric(bikeDayTrainSubset$season)
