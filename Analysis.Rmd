@@ -1,114 +1,155 @@
 ---
 title: "Analysis"
-author: "John Clements_Jingjing Li"
+author: "John Clements and Jingjing Li"
 date: "7/1/2021"
 output: html_document
   toc: TRUE
 params:
   weekday:
 ---
+
 # Introduction  
 
-```{r}
-library (readr)
-library(dplyr)
-library(ggplot2)
-library(tidyr)
+```{r message=FALSE, warning=FALSE}
+library(readr)
+library(tidyverse)
 library(caret)
 library(rmarkdown)
 ```
 
-# Data manipulation  
+# Reading in and Subsetting the Data
+
+Before doing any analysis, we need to read in the daily and hourly bike-share data and subset for the day of interest.
+
 ```{r, message=FALSE}
-bikeday <- read_csv("../Bike-Sharing-Dataset/day.csv")
-bikehour <- read_csv("../Bike-Sharing-Dataset/hour.csv")
-bikeday1 <- filter(bikeday,  weekday==1)
-bikehour1 <- filter(bikehour,  weekday==1)
-set.seed(10)
-train_day1 <- sample(1:nrow(bikeday1),size=nrow(bikeday1)*0.7)
-test_day1 <- setdiff(1:nrow(bikeday1), train_day1)
-bikedayTrain1 <- bikeday1[train_day1, ]
-bikedayTest1 <- bikeday1[test_day1, ]
-train_hour1 <- sample(1:nrow(bikehour1),size=nrow(bikehour1)*0.7)
-test_hour1 <- setdiff(1:nrow(bikehour1), train_hour1)
-bikehourTrain1 <- bikehour1[train_hour1, ]
-bikehourTest1 <- bikehour1[test_hour1, ]
+# Read in the daily and hourly data sets.
+bikeDay <- read_csv("../Bike-Sharing-Dataset/day.csv")
+bikeHour <- read_csv("../Bike-Sharing-Dataset/hour.csv")
+
+# Filter for the day of interest.
+bikeDaySubset <- filter(bikeDay,  weekday == 1)
+bikeHourSubset <- filter(bikeHour,  weekday == 1)
 ```
+
+```{r}
+bikeDaySubset <- bikeDaySubset %>%
+  mutate(season = as.factor(ifelse(season == 1, "Spring", 
+                                   ifelse(season == 2, "Summer", 
+                                          ifelse(season == 3, "Fall",
+                                                 "Winter")))))
+```
+
+With that done, we can split the two data sets into training and testing sets for predictive modeling.
+
+```{r}
+# Set a random seed for reproducibility.
+set.seed(10)
+
+# Set the proportion of observations to use for training models.
+trainProp <- 0.7
+
+# Get indexes for the training and testing subsets of the daily data.
+trainDaySubset <- sample(1:nrow(bikeDaySubset),
+                          size=nrow(bikeDaySubset)*trainProp)
+testDaySubset <- setdiff(1:nrow(bikeDaySubset), trainDaySubset)
+# Use the indexes to separate the training and testing sets of the daily data.
+bikeDayTrainSubset <- bikeDaySubset[trainDaySubset, ]
+bikeDayTestSubset <- bikeDaySubset[testDaySubset, ]
+
+# Get indexes for the training and testing subsets of the hourly data.
+trainHourSubset <- sample(1:nrow(bikeHourSubset),
+                           size=nrow(bikeHourSubset)*trainProp)
+testHourSubset <- setdiff(1:nrow(bikeHourSubset), trainHourSubset)
+# Use the indexes to separate the training and testing sets of the hourly data.
+bikeHourTrainSubset <- bikeHourSubset[trainHourSubset, ]
+bikeHourTestSubset <- bikeHourSubset[testHourSubset, ]
+```
+
+With our data sets created, we can now begin exploring the data.
+
 # Summarization  
+
 ```{r}
 #check effect of season on temperature, humidity and windspeed
-bikedayTrain1 %>% group_by(yr,season) %>% summarise(avgtemp = mean (temp), sdtemp = sd (temp), avghum = mean(hum), sdhum = sd (hum), avgwindspd= mean(windspeed),sdwindspd=sd(windspeed) )
+bikeDayTrainSubset %>% 
+  group_by(season) %>% 
+  summarise(
+    avgtemp = mean(temp), sdtemp = sd(temp), avghum = mean(hum), 
+    sdhum = sd(hum), avgwindspd = mean(windspeed), sdwindspd=sd(windspeed)
+    )
+```
 
+```{r}
 #compare weather situation of two different years
-yr_weather<- table(bikedayTrain1$yr, bikedayTrain1$weathersit)
+yr_weather<- table(bikeDayTrainSubset$yr, bikeDayTrainSubset$weathersit)
 
 # compare weather situation of different seasons
-season_weather <- table(bikedayTrain1$season, bikedayTrain1$weathersit)
+season_weather <- table(bikeDayTrainSubset$season, bikeDayTrainSubset$weathersit)
 
 #observe on distribution of total bike renter counts
-g1<- ggplot (bikedayTrain1, aes(x=cnt))
+g1<- ggplot (bikeDayTrainSubset, aes(x=cnt))
 g1 + geom_histogram() + xlab("total bike renter number") + ggtitle("Distribution of total bike renter counts")
 
 #Effect of temperature on total bike renter number
-g2 <- ggplot(bikedayTrain1, aes(x=temp, y=cnt))
+g2 <- ggplot(bikeDayTrainSubset, aes(x=temp, y=cnt))
 g2+ geom_point()+ xlab("Normalized temperature") + ylab("Total bike renter number") + 
   ggtitle("Effect of temperature on total bike renter counts")
 
 #Effect of windspeed on total bike renter number
-g3 <- ggplot(bikedayTrain1, aes(x=windspeed, y=cnt))
+g3 <- ggplot(bikeDayTrainSubset, aes(x=windspeed, y=cnt))
 g3+geom_point()+ xlab("Normalized windspeed") + 
   ggtitle("Effect of windspeed on total bike renter counts") + ylab("Total bike renter number")
 
 #Effect of season on total bike renter number
-bikedayTrain1$season <- as.factor(bikedayTrain1$season)
-g4 <- ggplot(bikedayTrain1, aes(x=season, y=cnt))
+bikeDayTrainSubset$season <- as.factor(bikeDayTrainSubset$season)
+g4 <- ggplot(bikeDayTrainSubset, aes(x=season, y=cnt))
 g4 + geom_boxplot() + scale_x_discrete(labels= c("Winter","Spring","Summer","Fall")) + ylab("Total bike renter number") + ggtitle("Effect of season on total bike renter counts")
 ```
 # Modeling
 ## Linear model 
 ### 2 
 ```{r}
-bikedayTrain1$season <- as.numeric(bikedayTrain1$season)
-pairs(bikedayTrain1 )
-lmfit1a <- lm(casual~temp, data=bikedayTrain1)
+bikeDayTrainSubset$season <- as.numeric(bikeDayTrainSubset$season)
+pairs(bikeDayTrainSubset )
+lmfit1a <- lm(casual~temp, data=bikeDayTrainSubset)
 summary(lmfit1a)
 
-lmfit1b <- lm(casual~ mnth, data=bikedayTrain1)
+lmfit1b <- lm(casual~ mnth, data=bikeDayTrainSubset)
 summary(lmfit1b) 
 
-lmfit1c <- lm(casual~ windspeed , data=bikedayTrain1)
+lmfit1c <- lm(casual~ windspeed , data=bikeDayTrainSubset)
 summary(lmfit1c) 
 
-lmfit1d <- lm(casual~season , data=bikedayTrain1)
+lmfit1d <- lm(casual~season , data=bikeDayTrainSubset)
 summary(lmfit1d) 
 
-lmfit2a <- lm(casual~temp*season, data=bikedayTrain1)
+lmfit2a <- lm(casual~temp*season, data=bikeDayTrainSubset)
 summary(lmfit2a)
 
-lmfit2b <- lm(casual~temp*windspeed, data=bikedayTrain1)
+lmfit2b <- lm(casual~temp*windspeed, data=bikeDayTrainSubset)
 summary(lmfit2b)
 
-lmfit2c <- lm(casual~season*windspeed, data=bikedayTrain1)
+lmfit2c <- lm(casual~season*windspeed, data=bikeDayTrainSubset)
 summary(lmfit2c)
 
-lmfit3a <- lm(casual~ temp + I(temp^2), data=bikedayTrain1)
+lmfit3a <- lm(casual~ temp + I(temp^2), data=bikeDayTrainSubset)
 summary(lmfit3a) 
 
-lmfit3b <- lm(casual~ windspeed + I(windspeed ^2), data=bikedayTrain1)
+lmfit3b <- lm(casual~ windspeed + I(windspeed ^2), data=bikeDayTrainSubset)
 summary(lmfit3b)
-lmfit3c <- lm(casual~ season + I(season^2), data=bikedayTrain1)
+lmfit3c <- lm(casual~ season + I(season^2), data=bikeDayTrainSubset)
 summary(lmfit3c) 
 
-lmfit4a <- lm(casual~temp*windspeed, data=bikedayTrain1)
+lmfit4a <- lm(casual~temp*windspeed, data=bikeDayTrainSubset)
 summary(lmfit4a)
 
-lmfit4b <- lm(casual~temp*season, data=bikedayTrain1)
+lmfit4b <- lm(casual~temp*season, data=bikeDayTrainSubset)
 summary(lmfit4b)
 
-lmfit5a <- lm(casual~temp*windspeed*season, data=bikedayTrain1)
+lmfit5a <- lm(casual~temp*windspeed*season, data=bikeDayTrainSubset)
 summary(lmfit5a)
 
-lmfit5b <- lm(casual~temp*windspeed*season + I(temp^2)+ I(windspeed^2)+ I(season^2), data=bikedayTrain1)
+lmfit5b <- lm(casual~temp*windspeed*season + I(temp^2)+ I(windspeed^2)+ I(season^2), data=bikeDayTrainSubset)
 summary(lmfit5b)
 
 trainFit <- function (fit) {
@@ -150,7 +191,7 @@ set.seed(50)
 gbmGrid <- expand.grid(interaction.depth=4, n.trees = 1000,
                    shrinkage=0.1,
                    n.minobsinnode=10)
-gbmFit <- train (casual ~., data=select(bikedayTrain1, -"weekday"),
+gbmFit <- train (casual ~., data=select(bikeDayTrainSubset, -"weekday"),
                    method="gbm",
                    preProcess= c("center", "scale"),
                    trControl = trainControl(method = "cv",
@@ -160,24 +201,24 @@ gbmFit
 ```
 # Comparison  
 ```{r}
-lmPred <- predict(lmfit1a,  newdata=bikedayTest1)
-lmTest <- postResample(lmPred , bikedayTest1$casual)
+lmPred <- predict(lmfit1a,  newdata=bikeDayTestSubset)
+lmTest <- postResample(lmPred , bikeDayTestSubset$casual)
 lmTest 
-boostPred <- predict (gbmFit, newdata=select (bikedayTest1, - casual ), n.trees=1000)
-boostTest <- postResample(boostPred, bikedayTest1$casual)
+boostPred <- predict (gbmFit, newdata=select (bikeDayTestSubset, - casual ), n.trees=1000)
+boostTest <- postResample(boostPred, bikeDayTestSubset$casual)
 boostTest
 
 ```
 # Automation
 ```{r}
-weekday <- unique(bikeday$weekday)
-output_file <- paste0( weekday, ".html")
+weekday <- unique(bikeDay$weekday)
+output_file <- paste0(weekday, ".html")
 params=lapply(weekday, FUN=function(x){list(weekday=x)})
 reports <- tibble(output_file, params)
 reports
 apply(reports, MARGIN=1, 
     FUN=function(x){
-                    render(input="../project/bike-share-prediction.Rmd",
+                    render(input="../Daily Reports/bike-share-prediction.Rmd",
                            output_file=x[[1]],params=x[[2]])
     })
 ```
