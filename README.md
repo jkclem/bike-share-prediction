@@ -10,5 +10,6 @@ The following packages are required for this project:
 
 - `readr`: reading in CSV files containing data
 - `tidyverse`: general data manipulation and plotting
+- `cowplot`: plotting in grids
 - `caret`: testing and making machine learning models
 - `rmarkdown`: rendering Rmd files as HTML files
