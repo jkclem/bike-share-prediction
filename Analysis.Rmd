@@ -19,16 +19,11 @@ library(rmarkdown)
 
 # Reading in and Subsetting the Data
 
-Before doing any analysis, we need to read in the daily and hourly bike-share data and subset for the day of interest.
+Before doing any analysis, we need to read in the daily bike-share data and subset for the day of interest.
 
 ```{r, message=FALSE}
-# Read in the daily and hourly data sets.
+# Read in the daily data set.
 bikeDay <- read_csv("../Bike-Sharing-Dataset/day.csv")
-bikeHour <- read_csv("../Bike-Sharing-Dataset/hour.csv")
-
-# Filter for the day of interest.
-bikeDaySubset <- filter(bikeDay,  weekday == 1)
-bikeHourSubset <- filter(bikeHour,  weekday == 1)
 ```
 
 Some of the variables, namely, `season`, `mnth`, `holiday`, `workingday`, and `weathersit` are categorical, but are stored numerically. Before proceeding with
@@ -37,18 +32,6 @@ the analysis, we are converting them to `factor` data types.
 ```{r}
 # Convert categorical variables stored numerically to factors.
 bikeDaySubset <- bikeDaySubset %>%
-  mutate(season = factor(ifelse(season == 1, "Spring",     
-                                ifelse(season == 2, "Summer", 
-                                       ifelse(season == 3, "Fall",
-                                              "Winter"))),
-                         levels=c("Spring", "Summer", "Fall", "Winter")),
-         mnth = factor(mnth, levels=1:12),
-         holiday = factor(holiday, levels=c(0, 1)),
-         workingday = factor(workingday, levels=c(0, 1)),
-         weathersit = ordered(weathersit, levels=c(1, 2, 3, 4))
-         )
-# Convert categorical variables stored numerically to factors.
-bikeHourSubset <- bikeHourSubset %>%
   mutate(season = factor(ifelse(season == 1, "Spring",     
                                 ifelse(season == 2, "Summer", 
                                        ifelse(season == 3, "Fall",
@@ -77,14 +60,6 @@ testDaySubset <- setdiff(1:nrow(bikeDaySubset), trainDaySubset)
 # Use the indexes to separate the training and testing sets of the daily data.
 bikeDayTrainSubset <- bikeDaySubset[trainDaySubset, ]
 bikeDayTestSubset <- bikeDaySubset[testDaySubset, ]
-
-# Get indexes for the training and testing subsets of the hourly data.
-trainHourSubset <- sample(1:nrow(bikeHourSubset),
-                           size=nrow(bikeHourSubset)*trainProp)
-testHourSubset <- setdiff(1:nrow(bikeHourSubset), trainHourSubset)
-# Use the indexes to separate the training and testing sets of the hourly data.
-bikeHourTrainSubset <- bikeHourSubset[trainHourSubset, ]
-bikeHourTestSubset <- bikeHourSubset[testHourSubset, ]
 ```
 
 With our data sets created, we can now begin exploring the data.
