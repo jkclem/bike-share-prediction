@@ -341,7 +341,7 @@ stat_sum
 Boosting is a way to slowly train a tree. 
 
 ### boosted tree 
-```{r}
+```{r, echo=T, results='hide'}
 set.seed(50)
 gbmGrid <- expand.grid(interaction.depth=4, n.trees = 1000,
                    shrinkage=0.1,
@@ -358,27 +358,26 @@ gbmFit
 # Comparison  
 
 ```{r}
+#Predict on test data using selected  linear regression model
 lmPred <- predict(lmfit1a,  newdata=bikeDayTestSubset)
+
+#Get RMSE, Rsquared and MAE from predicted models for comparison
 lmTest <- postResample(lmPred , bikeDayTestSubset$casual)
 lmTest 
-boostPred <- predict (gbmFit, newdata=select (bikeDayTestSubset, - casual ), n.trees=1000)
-boostTest <- postResample(boostPred, bikeDayTestSubset$casual)
+
+#convert season variable of test data from character into digital factors for prediction
+bikeDayTestSubset$season <-  factor(ifelse(bikeDayTestSubset$season ==  "Spring", 1,   
+                                ifelse(bikeDayTestSubset$season == "Summer", 2, 
+                                       ifelse(bikeDayTestSubset$season == "Fall",3, 
+                                              4))))
+
+#Predict on test data using optimized boosted tree model
+boostPred <- predict (gbmFit, newdata=bikeDayTestSubset )
+
+#Get RMSE, Rsquared and MAE from predicted models for comparison
+boostTest <- postResample (boostPred, bikeDayTestSubset$casual)
 boostTest
 
 ```
 
-# Automation
-
-```{r}
-weekday <- unique(bikeday$weekday)
-output_file <- paste0( weekday, ".html")
-params=lapply(weekday, FUN=function(x){list(weekday=x)})
-reports <- tibble(output_file, params)
-reports
-apply(reports, MARGIN=1, 
-    FUN=function(x){
-                    render(input="../bike-share-prediction/Analysis.Rmd",
-                           output_file=x[[1]],params=x[[2]])
-    })
-```
 
