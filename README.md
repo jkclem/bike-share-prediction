@@ -17,6 +17,7 @@ The following packages are required for this project:
 
 # Automation
 
+```
 weekday <- unique(bikeday$weekday)
 output_file <- paste0( weekday, ".html")
 params=lapply(weekday, FUN=function(x){list(weekday=x)})
@@ -27,3 +28,4 @@ apply(reports, MARGIN=1,
                     render(input="../bike-share-prediction/Analysis.Rmd",
                            output_file=x[[1]],params=x[[2]])
     })
+```
