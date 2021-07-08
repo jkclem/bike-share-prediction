@@ -182,7 +182,7 @@ We have examined the relationship between the seasons and weather, which we beli
 
 Let's start with a [kernel density estimate plot](https://en.wikipedia.org/wiki/Kernel_density_estimation) of bike rentals and box plots of bike rentals by weather situation.
 
-```{r}
+```{r echo=FALSE}
 ###
 # Make a KDE plot of bike rentals and box plots of bike rentals by weather 
 # situation.
@@ -207,7 +207,7 @@ plot_grid(plot7, plot8)
 
 Now let's examine the effects of temperature, humidity, wind speed, and season.
 
-```{r}
+```{r echo=FALSE}
 ###
 # Create scatter plots of bike rentals vs. temp, hum, and windspeed with 
 # regression lines and a box plots of bike rentals by season.
@@ -245,11 +245,49 @@ plot12 <- ggplot(bikeTrain, aes(x=season, y=cnt, color=season)) +
 plot_grid(plot9, plot10, plot11, plot12)
 ```
 
+Finally, let's compare bike rental counts between our two years of data.
+
+```{r echo=FALSE}
+###
+# Create a box plot of bike rentals by year.
+###
+
+plot13 <- ggplot(bikeTrain, aes(as.factor(yr+2011), cnt,
+                                color=as.factor(yr+2011))) + 
+  geom_boxplot() + 
+  geom_jitter(alpha=0.5) +
+  xlab("Year") + 
+  ylab("Bike Rentals") + 
+  ggtitle("Bike Rentals by Year") +
+  theme(legend.position="none")
+
+plot13
+```
 
 
 # Modeling
 
 ## Linear model 
+
+$\text{bike rentals}_i = \beta_0 + \beta_1\text{temp} + \beta_2\text{temp}^2 + \beta_3\text{wind speed} + \beta_4\text{wind speed}^2 + \beta_5\text{humidity} + \beta_6\text{humidity}^2 + \beta_7\text{Summer} +\beta_8\text{Fall} + \beta_9\text{Winter} + \beta_{10}\text{year} + \epsilon_i$
+
+```{r}
+# Create a trainControl object for repeated k-folds CV.
+trCntrl <- trainControl(method="repeatedcv", number=5, repeats=5)
+
+# Evaluate a linear model of the specified form in repeated k-folds CV and fit
+# it to the training set.
+linMod1 <- train(
+  cnt ~ temp + I(temp^2) + windspeed + I(windspeed^2) + hum + I(hum^2) 
+  + season + yr,
+  data=bikeTrain,
+  method="lm",
+  trControl=trCntrl
+  )
+
+linMod1
+```
+
 
 ### 2 
 
