@@ -124,7 +124,7 @@ The boxplots below conveys much of the same information graphically.
 ###
 # Create boxplots of the variables mentioned above, grouped by season.
 ###
-
+bikeDayTrainSubset$season <- as.factor(bikeDayTrainSubset$season)
 plot1 <- ggplot(bikeDayTrainSubset, aes(x=season, y=temp*41, color=season)) + 
   geom_boxplot() +
   geom_jitter() +
