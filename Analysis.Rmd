@@ -287,7 +287,7 @@ trCntrl2 <- trainControl(method="repeatedcv", number=5, repeats=5)
 # Evaluate a linear model of the specified form in repeated k-folds CV and fit
 # it to the training set.
 linMod2 <- train(
-  cnt ~ temp + I(temp^2) + windspeed + I(windspeed^2) + hum + I(hum^2) 
+  casual ~ temp + I(temp^2) + windspeed + I(windspeed^2) + hum + I(hum^2) 
   + season + yr,
   data=bikeDayTrainSubset,
   method="glm",
@@ -323,11 +323,11 @@ gbmFit
 
 ```{r}
 #Predict on test data using selected  linear regression model
-lmPred <- predict(lmfit1a,  newdata=bikeDayTestSubset)
+lmPred2 <- predict(linMod2,  newdata=bikeDayTestSubset)
 
 #Get RMSE, Rsquared and MAE from predicted models for comparison
-lmTest <- postResample(lmPred , bikeDayTestSubset$casual)
-lmTest 
+lmTest2 <- postResample(lmPred2 , bikeDayTestSubset$casual)
+lmTest2 
 
 #convert season variable of test data from character into digital factors for prediction
 bikeDayTestSubset$season <-  ifelse(bikeDayTestSubset$season ==  "Spring", 1,   
