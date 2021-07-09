@@ -67,7 +67,20 @@ With our data sets created, we can now begin exploring the data.
 
 # Data Exploration
 
-Let's begin our exploration with the numeric variables related to weather: temperature, humidity, and wind speed. Below are the means and standard deviations for each of these variables by season.
+Let's begin our exploration with a histogram of the number of bike rentals in a day for our given day of the week.
+
+```{r echo=FALSE}
+# Create a histogram of bike rentals in a day.
+plot1 <- ggplot(bikeTrain, aes(x=cnt)) + 
+  geom_histogram(bins=25, color="blue", fill="lightblue") + 
+  xlab("Bike Rentals") + 
+  ylab("Counts") + 
+  ggtitle("Histogram of Bike Rentals")
+
+plot1
+```
+
+Next, let's examine the numeric variables related to weather: temperature, humidity, and wind speed. Below are the means and standard deviations for each of these variables by season.
 
 ```{r echo=FALSE}
 # Find the means and standard deviations of temperature, humidity and windspeed
@@ -141,13 +154,7 @@ knitr::kable(
 )
 ```
 
-```{r}
-#observe on distribution of total bike renter counts
-plot4<- ggplot(bikeTrain, aes(x=cnt)) + 
-  geom_histogram() + 
-  xlab("total bike renter number") + 
-  ggtitle("Distribution of total bike renter counts")
-```
+
 
 ```{r}
 plot4 <- ggplot(bikeTrain, aes(x=temp*41, y=cnt)) + 
