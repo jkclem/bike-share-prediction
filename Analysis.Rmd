@@ -3,10 +3,9 @@ title: "Analysis"
 author: "John Clements and Jingjing Li"
 date: "7/1/2021"
 output: html_document
-  toc: TRUE
-#params:  weekday
+toc: TRUE
 ---
-
+#params:  weekday
 # Introduction  
 
 ```{r message=FALSE, warning=FALSE}
@@ -157,7 +156,7 @@ knitr::kable(
 
 Although the relationships between seasons and numeric weather measures are interesting, we want to predict bike rentals. So now we look at how our numeric weather measures and seasons relate to bike rentals.
 
-```{r}
+```{r echo=FALSE}
 ###
 # Create scatter plots for bike rentals vs. our numeric variables and boxplots
 # for bike rentals by season.
@@ -272,7 +271,7 @@ In our second model, we assume the same combination of variables and any quadrat
 # Evaluate a linear model of the specified form in repeated k-folds CV and fit
 # it to the training set.
 linMod2 <- train(
-  casual ~ temp + I(temp^2) + windspeed + I(windspeed^2) + hum + I(hum^2) 
+  cnt ~ temp + I(temp^2) + windspeed + I(windspeed^2) + hum + I(hum^2) 
   + season + yr,
   data=bikeTrain,
   method="glm",
@@ -285,7 +284,7 @@ linMod2
 
 ## Ensemble Tree Models
 
-We try random forests and gradient boosted trees, tuning the hyperparameter grid.
+We try random forests and gradient boosted trees, tuning the hyper-parameter grid.
 
 ### Random Forest
 
@@ -294,7 +293,7 @@ We try a random forest here.
 ```{r}
 # Perform the grid search through repeated CV.
 rfFit <- train (
-  casual ~ temp + windspeed + hum + season + yr, 
+  cnt ~ temp + windspeed + hum + season + yr, 
   data=select(bikeTrain, -"weekday"),
   method="rf",
   preProcess= c("center", "scale"),
@@ -321,7 +320,7 @@ gbmGrid <- expand.grid(
 
 # Perform the grid search through repeated CV.
 gbmFit <- train (
-  casual ~ temp + windspeed + hum + season + yr, 
+  cnt ~ temp + windspeed + hum + season + yr, 
   data=select(bikeTrain, -"weekday"),
   method="gbm",
   preProcess= c("center", "scale"),
@@ -335,20 +334,98 @@ gbmFit$results %>%
   filter(RMSE == min(RMSE))
 ```
 
-#Predict on test data using selected  linear regression model
-lmPred2 <- predict(linMod2,  newdata=bikeTest)
+### Comparing the Models
 
-#Get RMSE, Rsquared and MAE from predicted models for comparison
-lmTest2 <- postResample(lmPred2 , bikeTest$casual)
-lmTest2 
+Let's evaluate their repeated k-folds CV performance first.
 
-#Predict on test data using optimized boosted tree model
-boostPred <- predict (gbmFit, newdata=bikeTest )
+```{r echo=FALSE}
+# Create a list of models and vector of model names.
+modelList <- list(linMod1, linMod2, rfFit, gbmFit)
+modelNames <- c("OLS", "Poisson Regression", "Random Forest", "Boosted Trees")
 
-#Get RMSE, Rsquared and MAE from predicted models for comparison
-boostTest <- postResample (boostPred, bikeTest$casual)
-boostTest
+###
+# Extract model performances and put them in a summary table.
+###
 
+cvRMSE <- unlist(
+  sapply(
+    sapply(
+      sapply(modelList, FUN="[", "results"), 
+      FUN=filter, RMSE==min(RMSE)), 
+    FUN="[", "RMSE"
+    )
+  )
+
+cvMAE <- unlist(
+  sapply(
+    sapply(
+      sapply(modelList, FUN="[", "results"), 
+      FUN=filter, MAE==min(MAE)), 
+    FUN="[", "MAE"
+    )
+  )
+
+cvRsquared <- unlist(
+  sapply(
+    sapply(
+      sapply(modelList, FUN="[", "results"), 
+      FUN=filter, Rsquared==max(Rsquared)), 
+    FUN="[", "Rsquared"
+    )
+  )
+
+# Create a data.frame of model performances.
+cvPerformance <- data.frame(
+  Model=modelNames,
+  RMSE=cvRMSE,
+  Rsq=cvRsquared,
+  MAE=cvMAE
+)
+
+knitr::kable(
+  cvPerformance,
+  digits=2,
+  caption="Table 3: Repeated k-folds CV Performance Summary",
+  col.names=c("", "RMSE", "Rsquared", "MAE")
+)
 ```
 
+Now let's look at their test set performance.
 
+```{r echo=FALSE}
+evaluatePeformance <- function(model, dataEval, target){
+  ###
+  # This function takes in a fit model, testing data (tibble), and a target
+  # variable (string) and returns the performance.
+  ###
+  preds <- predict(model, newdata=dataEval)
+  return(postResample(preds, pull(dataEval, target)))
+}
+
+# Get the test set performances.
+testPerformances <- sapply(
+  modelList, FUN=evaluatePeformance, dataEval=bikeTest, target="cnt"
+  )
+# Rename the columns with the model names.
+colnames(testPerformances) <- modelNames
+
+# Convert the table to data.frame.
+testPerformances <- as.data.frame(t(testPerformances))
+
+knitr::kable(
+  testPerformances,
+  digits=2,
+  caption="Table 4: Test Set Performance Summary",)
+```
+
+```{r echo=FALSE}
+# Extract the best model.
+bestModel <- testPerformances %>%
+  mutate(Model = modelNames) %>%
+  filter(RMSE == min(RMSE)) %>%
+  select(Model, RMSE)
+bestModelName <- bestModel$Model
+bestRMSE <- round(bestModel$RMSE, 2)
+```
+
+The best performing model is the `r bestModelName` with an RMSE of `r bestRMSE`.
