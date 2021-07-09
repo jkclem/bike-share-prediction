@@ -226,105 +226,87 @@ plot10 <- ggplot(bikeDayTrainSubset, aes(x=workingday, y=cnt,
   theme(legend.position="none")
 
 plot_grid(plot8, plot9, plot10, ncol=2)
-```
 
+plot11 <- ggplot(bikeTrain, aes(x=windspeed*67, y=cnt)) + 
+  geom_point(color="blue", alpha=0.5) + 
+  geom_smooth(method = 'lm', formula='y ~ poly(x, 2)', color="red") +
+  xlab("Wind Speed (km/h)") + 
+  ylab("Rentals") + 
+  ggtitle("Bike Rentals vs. Wind Speed")
+plot12 <- ggplot(bikeTrain, aes(x=season, y=cnt, color=season)) + 
+  geom_boxplot() + 
+  geom_jitter(alpha=0.5) + 
+  xlab("Season") + 
+  ylab("Bike Rentals") + 
+  ggtitle("Bike Rentals by Season") +
+  theme(legend.position="none")
+plot_grid(plot9, plot10, plot11, plot12)
+
+```
+Finally, let's compare bike rental counts between our two years of data.
+
+```{r echo=FALSE}
+###
+# Create a box plot of bike rentals by year.
+###
+plot13 <- ggplot(bikeTrain, aes(as.factor(yr+2011), cnt,
+                                color=as.factor(yr+2011))) + 
+  geom_boxplot() + 
+  geom_jitter(alpha=0.5) +
+  xlab("Year") + 
+  ylab("Bike Rentals") + 
+  ggtitle("Bike Rentals by Year") +
+  theme(legend.position="none")
+plot13
+```
 
 # Modeling
 
 ## Linear model 
+$\text{bike rentals}_i = \beta_0 + \beta_1\text{temp} + \beta_2\text{temp}^2 + \beta_3\text{wind speed} + \beta_4\text{wind speed}^2 + \beta_5\text{humidity} + \beta_6\text{humidity}^2 + \beta_7\text{Summer} +\beta_8\text{Fall} + \beta_9\text{Winter} + \beta_{10}\text{year} + \epsilon_i$
 
+```{r}
+# Create a trainControl object for repeated k-folds CV.
+trCntrl <- trainControl(method="repeatedcv", number=5, repeats=5)
+# Evaluate a linear model of the specified form in repeated k-folds CV and fit
+# it to the training set.
+linMod1 <- train(
+  cnt ~ temp + I(temp^2) + windspeed + I(windspeed^2) + hum + I(hum^2) 
+  + season + yr,
+  data=bikeDayTrainSubset,
+  method="lm",
+  trControl=trCntrl
+  )
+linMod1
+```
 ### 2 
 
-
-
 ```{r}
-bikeDayTrainSubset$season <- as.numeric(bikeDayTrainSubset$season)
-pairs(bikeDayTrainSubset )
-lmfit1a <- lm(casual~temp, data=bikeDayTrainSubset)
-summary(lmfit1a)
-
-lmfit1b <- lm(casual~ mnth, data=bikeDayTrainSubset)
-summary(lmfit1b) 
-
-lmfit1c <- lm(casual~ windspeed , data=bikeDayTrainSubset)
-summary(lmfit1c) 
-
-lmfit1d <- lm(casual~season , data=bikeDayTrainSubset)
-summary(lmfit1d) 
-
-lmfit2a <- lm(casual~temp*season, data=bikeDayTrainSubset)
-summary(lmfit2a)
-
-lmfit2b <- lm(casual~temp*windspeed, data=bikeDayTrainSubset)
-summary(lmfit2b)
-
-lmfit2c <- lm(casual~season*windspeed, data=bikeDayTrainSubset)
-summary(lmfit2c)
-
-lmfit3a <- lm(casual~ temp + I(temp^2), data=bikeDayTrainSubset)
-summary(lmfit3a) 
-
-lmfit3b <- lm(casual~ windspeed + I(windspeed ^2), data=bikeDayTrainSubset)
-summary(lmfit3b)
-lmfit3c <- lm(casual~ season + I(season^2), data=bikeDayTrainSubset)
-summary(lmfit3c) 
-
-lmfit4a <- lm(casual~temp*windspeed, data=bikeDayTrainSubset)
-summary(lmfit4a)
-
-lmfit4b <- lm(casual~temp*season, data=bikeDayTrainSubset)
-summary(lmfit4b)
-
-lmfit5a <- lm(casual~temp*windspeed*season, data=bikeDayTrainSubset)
-summary(lmfit5a)
-
-lmfit5b <- lm(casual~temp*windspeed*season + I(temp^2)+ I(windspeed^2)+ I(season^2), data=bikeDayTrainSubset)
-summary(lmfit5b)
-
-trainFit <- function (fit) {
-  model <- round(c(summary(fit)$adj.r.squared, AIC(fit), 
-                   MuMIn::AICc(fit), BIC(fit)), 3)
-  name <- c("adj.r.sqr", "AIC","AICc", "BIC")
-  df_stat <- data.frame(name, model)
-  df_stat2 <- spread(df_stat, name, model)
-}
-stat1a <- trainFit(lmfit1a)
-stat1b <- trainFit(lmfit1b)
-stat1c <- trainFit(lmfit1c)
-stat1d <- trainFit(lmfit1c)
-  
-stat2a <- trainFit(lmfit2a)
-stat2b <- trainFit(lmfit2b)
-stat2c <- trainFit(lmfit2c)
-
-stat3a <- trainFit(lmfit3a)
-stat3b <- trainFit(lmfit3b)
-stat3c <- trainFit(lmfit3c)
-    
-stat4a <- trainFit(lmfit4a)        
-stat4b <- trainFit(lmfit4b) 
-
-stat5a<- trainFit(lmfit5a)
-stat5b<- trainFit(lmfit5a)
-
-stat_sum <- rbind(stat1a,stat1b,stat1c,stat1d,stat2a,stat2b,stat2c,stat3a,stat3b,stat3c,stat4a,stat4b,stat5a,stat5b)
-rownames (stat_sum) <-c("lmfit1a","lmfit1b","lmfit1c","lmfit1d","lmfit2a","lmfit2b","lmfit2c", "lmfit3a","lmfit3b","lmfit3c","lmfit4a","lmfit4b","lmfit5a","lmfit5b") 
-stat_sum 
-
+# Create a trainControl object for cross-validation.
+trCntrl2 <- trainControl(method="repeatedcv", number=5, repeats=5)
+# Evaluate a linear model of the specified form in repeated k-folds CV and fit
+# it to the training set.
+linMod2 <- train(
+  cnt ~ temp + I(temp^2) + windspeed + I(windspeed^2) + hum + I(hum^2) 
+  + season + yr,
+  data=bikeDayTrainSubset,
+  method="glm",
+  family="poisson",
+  trControl=trCntrl2
+  )
+linMod2
 ```
-```{r}
-lmFitCv <- train(casual ~., data=bikeDayTrainSubset,
-               method="lm",
-               trcontrol=traincontrol(method="cv",number=10) )
-lmFitCv
-```
+
 ## Ensemble tree model
 
-Boosting is a way to slowly train a tree. 
+Boosting is a way to slowly train a tree. Each tree is created based on previous one. As a result, the variance is aimed to decrease.  
 
 ### boosted tree 
 ```{r, echo=T, results='hide'}
+#set seed for reproduciblity.
 set.seed(50)
+
+#set tuning parameters. 
 gbmGrid <- expand.grid(interaction.depth=4, n.trees = 1000,
                    shrinkage=0.1,
                    n.minobsinnode=10)
@@ -348,10 +330,10 @@ lmTest <- postResample(lmPred , bikeDayTestSubset$casual)
 lmTest 
 
 #convert season variable of test data from character into digital factors for prediction
-bikeDayTestSubset$season <-  factor(ifelse(bikeDayTestSubset$season ==  "Spring", 1,   
+bikeDayTestSubset$season <-  ifelse(bikeDayTestSubset$season ==  "Spring", 1,   
                                 ifelse(bikeDayTestSubset$season == "Summer", 2, 
                                        ifelse(bikeDayTestSubset$season == "Fall",3, 
-                                              4))))
+                                              4)))
 
 #Predict on test data using optimized boosted tree model
 boostPred <- predict (gbmFit, newdata=bikeDayTestSubset )
