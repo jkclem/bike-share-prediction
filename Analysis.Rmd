@@ -7,11 +7,7 @@ output: html_document
 #params:  weekday
 ---
 
-# Introduction
-
-We are using the daily [bike sharing dataset](https://archive.ics.uci.edu/ml/datasets/Bike+Sharing+Dataset) to demonstrate how to use machine learning for predictive modeling. The data set contains daily rentals for a bike share service, information on the weather, date information, and indicators for if the day was a holiday, working day, or a weekday (and that is an inclusive **or**).
-
-We believe that the weather will be predictive of the number of bike rentals because few people want to bike in poor weather conditions. We also believe there will be seasonal effects because weather is related to the seasons. We also suspect there may be relationships between whether a day is a working day or holiday. There may be more demand on working days as people commute to work, or there may be more demand on holidays when people want to go about town.
+# Introduction  
 
 ```{r message=FALSE, warning=FALSE}
 library(readr)
@@ -21,15 +17,13 @@ library(caret)
 library(rmarkdown)
 ```
 
-# Data
+# Reading in and Subsetting the Data
 
 Before doing any analysis, we need to read in the daily bike-share data and subset for the day of interest.
 
 ```{r, message=FALSE}
 # Read in the daily data set.
-bikeDay <- read_csv("./Bike-Sharing-Dataset/day.csv")
-# Filter for only the day of interest.
-bikeDay <- filter(bikeDay, weekday==0)
+bikeDay <- read_csv("../Bike-Sharing-Dataset/day.csv")
 ```
 
 Some of the variables, namely, `season`, `mnth`, `holiday`, `workingday`, and `weathersit` are categorical, but are stored numerically. Before proceeding with
@@ -37,7 +31,7 @@ the analysis, we are converting them to `factor` data types.
 
 ```{r}
 # Convert categorical variables stored numerically to factors.
-bikeDay <- bikeDay %>%
+bikeDaySubset <- bikeDaySubset %>%
   mutate(season = factor(ifelse(season == 1, "Spring",     
                                 ifelse(season == 2, "Summer", 
                                        ifelse(season == 3, "Fall",
@@ -60,32 +54,33 @@ set.seed(10)
 trainProp <- 0.7
 
 # Get indexes for the training and testing subsets of the daily data.
-trainIndexes <- sample(1:nrow(bikeDay),
-                          size=nrow(bikeDay)*trainProp)
-testIndexes <- setdiff(1:nrow(bikeDay), trainIndexes)
+trainDaySubset <- sample(1:nrow(bikeDaySubset),
+                          size=nrow(bikeDaySubset)*trainProp)
+testDaySubset <- setdiff(1:nrow(bikeDaySubset), trainDaySubset)
 # Use the indexes to separate the training and testing sets of the daily data.
-bikeTrain <- bikeDay[trainIndexes, ]
-bikeTest <- bikeDay[testIndexes, ]
+bikeDayTrainSubset <- bikeDaySubset[trainDaySubset, ]
+bikeDayTestSubset <- bikeDaySubset[testDaySubset, ]
 ```
 
 With our data sets created, we can now begin exploring the data.
 
-# Summarizations
+# Data Exploration
 
 Let's begin our exploration with the numeric variables related to weather: temperature, humidity, and wind speed. Below are the means and standard deviations for each of these variables by season.
 
 ```{r echo=FALSE}
-# Find the means and standard deviations of temperature, humidity and wind speed
+# Find the means and standard deviations of temperature, humidity and windspeed
 # by season.
-seasonalSummary <- bikeTrain %>% 
+seasonalSummary <- bikeDayTrainSubset %>% 
   group_by(season) %>% 
   summarise(
     avgtemp = mean(temp*41), sdtemp = sd(temp*41), 
     avghum = mean(hum*100), sdhum = sd(hum*100), 
     avgwindspd = mean(windspeed*67), sdwindspd=sd(windspeed*67)
     )
+```
 
-
+```{r echo=FALSE}
 knitr::kable(
   seasonalSummary,
   col.names=c("Season", 
@@ -98,170 +93,139 @@ knitr::kable(
 )
 ```
 
-The box plots below displays the quartiles and any outliers graphically.
+The boxplots below conveys much of the same information graphically.
 
 ```{r echo=FALSE}
 ###
-# Create box plots of the variables mentioned above, grouped by season, with
-# jittered dots to display actual values.
+# Create boxplots of the variables mentioned above, grouped by season.
 ###
-
-plot1 <- ggplot(bikeTrain, aes(x=season, y=temp*41, color=season)) + 
+bikeDayTrainSubset$season <- as.factor(bikeDayTrainSubset$season)
+plot1 <- ggplot(bikeDayTrainSubset, aes(x=season, y=temp*41, color=season)) + 
   geom_boxplot() +
-  geom_jitter(alpha=0.5) +
+  geom_jitter() +
   labs(x="Season",
        y="Temp. (Celsius)",
-       title="Temp. by Season") + 
+       title="Box Plot of Temp. by Season") + 
   theme(legend.position="none")
 
-plot2 <- ggplot(bikeTrain, aes(x=season, y=hum*100, color=season)) + 
+plot2 <- ggplot(bikeDayTrainSubset, aes(x=season, y=hum*100, color=season)) + 
   geom_boxplot() +
-  geom_jitter(alpha=0.5) +
+  geom_jitter() +
   labs(x="Season",
        y="Humidity",
-       title="Humidity by Season") + 
+       title="Box Plot of Humidity by Season") + 
   theme(legend.position="none")
 
-plot3 <- ggplot(bikeTrain, aes(x=season, y=windspeed*67, 
+plot3 <- ggplot(bikeDayTrainSubset, aes(x=season, y=windspeed*67, 
                                         color=season)) + 
   geom_boxplot() +
-  geom_jitter(alpha=0.5) +
+  geom_jitter() +
   labs(x="Season",
        y="Wind Speed (km/h)",
-       title="Wind Speed by Season") + 
+       title="Box Plot of Wind Speed by Season") + 
   theme(legend.position="none")
 
 plot_grid(plot1, plot2, plot3)
 ```
 
-Now that we've seen how temperature, humidity, and wind speed relate to the seasons, let's look at how they relate to each other.
 
 ```{r echo=FALSE}
-###
-# Create scatter plots between temp, hum, and windspeed with regression lines.
-###
+# Compare weather situation counts for the two years.
+yearWeather <- table(bikeDayTrainSubset$yr, bikeDayTrainSubset$weathersit)
+row.names(yearWeather) <- c("2011", "2012")
 
-plot4 <- ggplot(bikeTrain, aes(temp*41, hum*100)) + 
-  geom_point(color="blue", alpha=0.5) + 
-  geom_smooth(method = 'lm', formula='y ~ poly(x, 2)', color="red") +
-  xlab("Temp. (Celsius)") + 
-  ylab("Humidity") + 
-  ggtitle("Humidity vs. Temp.")
-
-plot5 <- ggplot(bikeTrain, aes(temp*41, windspeed*67)) + 
-  geom_point(color="blue", alpha=0.5) + 
-  geom_smooth(method = 'lm', formula='y ~ x', color="red") +
-  xlab("Temp. (Celsius)") + 
-  ylab("Wind Speed (km/h)") + 
-  ggtitle("Wind Speed vs. Temp.")
-
-plot6 <- ggplot(bikeTrain, aes(hum*100, windspeed*67)) + 
-  geom_point(color="blue", alpha=0.5) + 
-  geom_smooth(method = 'lm', formula='y ~ poly(x, 2)', color="red") +
-  xlab("Humidity") + 
-  ylab("Wind Speed (km/h)") + 
-  ggtitle("Wind Speed vs. Humidity")
-
-plot_grid(plot4, plot5, plot6)
+# Compare weather situation counts for the four seasons.
+seasonWeather <- table(bikeDayTrainSubset$season, bikeDayTrainSubset$weathersit)
 ```
 
-Now that we have examined the relationship between the seasons and our numeric measures of the weather, let us look at the counts of weather situations by season.
-
 ```{r echo=FALSE}
-# Compare weather situation counts for the four seasons.
-seasonWeather <- table(bikeTrain$season, bikeTrain$weathersit)
-
 knitr::kable(
-  seasonWeather,
+  yearWeather,
   col.names=c("Pleasant", "Overcast", "Unpleasant", "Severe"),
-  caption="Table 2: Weather Situation Counts by Season"
+  caption="Table 2: Weather Situation by Year"
 )
 ```
 
-We have examined the relationship between the seasons and weather, which we believe are important, but we want to predict the bike rentals given these features. So now we look at how our features' relationships with bike rentals.
-
-Let's start with a [kernel density estimate plot](https://en.wikipedia.org/wiki/Kernel_density_estimation) of bike rentals and box plots of bike rentals by weather situation.
-
 ```{r echo=FALSE}
-###
-# Make a KDE plot of bike rentals and box plots of bike rentals by weather 
-# situation.
-###
-
-plot7 <- ggplot(bikeTrain, aes(x=cnt)) + 
-  geom_density(bw=250, color="darkblue", fill="lightblue") + 
-  xlab("Bike Rentals") + 
-  ggtitle("KDE Plot of Bike Rentals")
-
-plot8 <- ggplot(bikeTrain, aes(x=weathersit, y=cnt, 
-                                        color=weathersit)) + 
-  geom_boxplot() + 
-  geom_jitter(alpha=0.25) + 
-  xlab("Weather Situation") + 
-  ylab("Bike Rentals") + 
-  ggtitle("Bike Rentals by Weather") +
-  theme(legend.position="none")
-
-plot_grid(plot7, plot8)
+knitr::kable(
+  seasonWeather,
+  col.names=c("Pleasant", "Overcast", "Unpleasant", "Severe"),
+  caption="Table 3: Weather Situation by Season"
+)
 ```
 
-Now let's examine the effects of temperature, humidity, wind speed, and season.
+```{r}
+#observe on distribution of total bike renter counts
+plot4<- ggplot(bikeDayTrainSubset, aes(x=cnt)) + 
+  geom_histogram() + 
+  xlab("total bike renter number") + 
+  ggtitle("Distribution of total bike renter counts")
+```
 
-```{r echo=FALSE}
-###
-# Create scatter plots of bike rentals vs. temp, hum, and windspeed with 
-# regression lines and a box plots of bike rentals by season.
-###
-
-plot9 <- ggplot(bikeTrain, aes(x=temp*41, y=cnt)) + 
+```{r}
+plot4 <- ggplot(bikeDayTrainSubset, aes(x=temp*41, y=cnt)) + 
   geom_point(color="blue", alpha=0.5) + 
   geom_smooth(method = 'lm', formula='y ~ poly(x, 2)', color="red") +
   xlab("Temp. (Celsius)") + 
   ylab("Rentals") + 
   ggtitle("Bike Rentals vs. Temp.")
 
-plot10 <- ggplot(bikeTrain, aes(x=hum*100, y=cnt)) + 
+#Effect of temperature on total bike renter number
+plot5 <- ggplot(bikeDayTrainSubset, aes(x=hum*100, y=cnt)) + 
   geom_point(color="blue", alpha=0.5) + 
   geom_smooth(method = 'lm', formula='y ~ poly(x, 2)', color="red") +
   xlab("Humidity") + 
   ylab("Rentals") + 
   ggtitle("Bike Rentals vs. Humidity")
 
-plot11 <- ggplot(bikeTrain, aes(x=windspeed*67, y=cnt)) + 
+#Effect of windspeed on total bike renter number
+plot6 <- ggplot(bikeDayTrainSubset, aes(x=windspeed*67, y=cnt)) + 
   geom_point(color="blue", alpha=0.5) + 
   geom_smooth(method = 'lm', formula='y ~ poly(x, 2)', color="red") +
   xlab("Wind Speed (km/h)") + 
   ylab("Rentals") + 
   ggtitle("Bike Rentals vs. Wind Speed")
 
-plot12 <- ggplot(bikeTrain, aes(x=season, y=cnt, color=season)) + 
+#Effect of season on total bike renter number
+plot7 <- ggplot(bikeDayTrainSubset, aes(x=season, y=cnt, color=season)) + 
   geom_boxplot() + 
-  geom_jitter(alpha=0.5) + 
+  geom_jitter() + 
   xlab("Season") + 
   ylab("Bike Rentals") + 
   ggtitle("Bike Rentals by Season") +
   theme(legend.position="none")
 
-plot_grid(plot9, plot10, plot11, plot12)
+plot_grid(plot4, plot5, plot6, plot7, ncol=2)
 ```
 
-Finally, let's compare bike rental counts between our two years of data.
-
-```{r echo=FALSE}
-###
-# Create a box plot of bike rentals by year.
-###
-
-plot13 <- ggplot(bikeTrain, aes(as.factor(yr+2011), cnt,
-                                color=as.factor(yr+2011))) + 
+```{r}
+plot8 <- ggplot(bikeDayTrainSubset, aes(x=weathersit, y=cnt, 
+                                        color=weathersit)) + 
   geom_boxplot() + 
-  geom_jitter(alpha=0.5) +
-  xlab("Year") + 
+  geom_jitter() + 
+  xlab("Weather Situation") + 
   ylab("Bike Rentals") + 
-  ggtitle("Bike Rentals by Year") +
+  ggtitle("Bike Rentals by Weather") +
   theme(legend.position="none")
 
-plot13
+plot9 <- ggplot(bikeDayTrainSubset, aes(x=holiday, y=cnt, color=holiday)) + 
+  geom_boxplot() + 
+  geom_jitter() + 
+  xlab("Holiday") + 
+  ylab("Bike Rentals") + 
+  ggtitle("Bike Rentals by Holiday") +
+  theme(legend.position="none")
+
+plot10 <- ggplot(bikeDayTrainSubset, aes(x=workingday, y=cnt, 
+                                        color=workingday)) + 
+  geom_boxplot() + 
+  geom_jitter() + 
+  xlab("Working Day") + 
+  ylab("Bike Rentals") + 
+  ggtitle("Bike Rentals by Working Day") +
+  theme(legend.position="none")
+
+plot_grid(plot8, plot9, plot10, ncol=2)
 ```
 
 
@@ -269,71 +233,52 @@ plot13
 
 ## Linear model 
 
-$\text{bike rentals}_i = \beta_0 + \beta_1\text{temp} + \beta_2\text{temp}^2 + \beta_3\text{wind speed} + \beta_4\text{wind speed}^2 + \beta_5\text{humidity} + \beta_6\text{humidity}^2 + \beta_7\text{Summer} +\beta_8\text{Fall} + \beta_9\text{Winter} + \beta_{10}\text{year} + \epsilon_i$
-
-```{r}
-# Create a trainControl object for repeated k-folds CV.
-trCntrl <- trainControl(method="repeatedcv", number=5, repeats=5)
-
-# Evaluate a linear model of the specified form in repeated k-folds CV and fit
-# it to the training set.
-linMod1 <- train(
-  cnt ~ temp + I(temp^2) + windspeed + I(windspeed^2) + hum + I(hum^2) 
-  + season + yr,
-  data=bikeTrain,
-  method="lm",
-  trControl=trCntrl
-  )
-
-linMod1
-```
-
-
 ### 2 
 
 
+
 ```{r}
-bikeTrain$season <- as.numeric(bikeTrain$season)
-pairs(bikeTrain )
-lmfit1a <- lm(casual~temp, data=bikeTrain)
+bikeDayTrainSubset$season <- as.numeric(bikeDayTrainSubset$season)
+pairs(bikeDayTrainSubset )
+lmfit1a <- lm(casual~temp, data=bikeDayTrainSubset)
 summary(lmfit1a)
 
-lmfit1b <- lm(casual~ mnth, data=bikeTrain)
+lmfit1b <- lm(casual~ mnth, data=bikeDayTrainSubset)
 summary(lmfit1b) 
 
-lmfit1c <- lm(casual~ windspeed , data=bikeTrain)
+lmfit1c <- lm(casual~ windspeed , data=bikeDayTrainSubset)
 summary(lmfit1c) 
 
-lmfit1d <- lm(casual~season , data=bikeTrain)
+lmfit1d <- lm(casual~season , data=bikeDayTrainSubset)
 summary(lmfit1d) 
 
-lmfit2a <- lm(casual~temp*season, data=bikeTrain)
+lmfit2a <- lm(casual~temp*season, data=bikeDayTrainSubset)
 summary(lmfit2a)
 
-lmfit2b <- lm(casual~temp*windspeed, data=bikeTrain)
+lmfit2b <- lm(casual~temp*windspeed, data=bikeDayTrainSubset)
 summary(lmfit2b)
 
-lmfit2c <- lm(casual~season*windspeed, data=bikeTrain)
+lmfit2c <- lm(casual~season*windspeed, data=bikeDayTrainSubset)
 summary(lmfit2c)
 
-lmfit3a <- lm(casual~ temp + I(temp^2), data=bikeTrain)
+lmfit3a <- lm(casual~ temp + I(temp^2), data=bikeDayTrainSubset)
 summary(lmfit3a) 
 
-lmfit3b <- lm(casual~ windspeed + I(windspeed ^2), data=bikeTrain)
+lmfit3b <- lm(casual~ windspeed + I(windspeed ^2), data=bikeDayTrainSubset)
 summary(lmfit3b)
-lmfit3c <- lm(casual~ season + I(season^2), data=bikeTrain)
+lmfit3c <- lm(casual~ season + I(season^2), data=bikeDayTrainSubset)
 summary(lmfit3c) 
 
-lmfit4a <- lm(casual~temp*windspeed, data=bikeTrain)
+lmfit4a <- lm(casual~temp*windspeed, data=bikeDayTrainSubset)
 summary(lmfit4a)
 
-lmfit4b <- lm(casual~temp*season, data=bikeTrain)
+lmfit4b <- lm(casual~temp*season, data=bikeDayTrainSubset)
 summary(lmfit4b)
 
-lmfit5a <- lm(casual~temp*windspeed*season, data=bikeTrain)
+lmfit5a <- lm(casual~temp*windspeed*season, data=bikeDayTrainSubset)
 summary(lmfit5a)
 
-lmfit5b <- lm(casual~temp*windspeed*season + I(temp^2)+ I(windspeed^2)+ I(season^2), data=bikeTrain)
+lmfit5b <- lm(casual~temp*windspeed*season + I(temp^2)+ I(windspeed^2)+ I(season^2), data=bikeDayTrainSubset)
 summary(lmfit5b)
 
 trainFit <- function (fit) {
@@ -365,8 +310,14 @@ stat5b<- trainFit(lmfit5a)
 stat_sum <- rbind(stat1a,stat1b,stat1c,stat1d,stat2a,stat2b,stat2c,stat3a,stat3b,stat3c,stat4a,stat4b,stat5a,stat5b)
 rownames (stat_sum) <-c("lmfit1a","lmfit1b","lmfit1c","lmfit1d","lmfit2a","lmfit2b","lmfit2c", "lmfit3a","lmfit3b","lmfit3c","lmfit4a","lmfit4b","lmfit5a","lmfit5b") 
 stat_sum 
-```
 
+```
+```{r}
+lmFitCv <- train(casual ~., data=bikeDayTrainSubset,
+               method="lm",
+               trcontrol=traincontrol(method="cv",number=10) )
+lmFitCv
+```
 ## Ensemble tree model
 
 Boosting is a way to slowly train a tree. 
@@ -377,7 +328,7 @@ set.seed(50)
 gbmGrid <- expand.grid(interaction.depth=4, n.trees = 1000,
                    shrinkage=0.1,
                    n.minobsinnode=10)
-gbmFit <- train (casual ~., data=select(bikeTrain, -"weekday"),
+gbmFit <- train (casual ~., data=select(bikeDayTrainSubset, -"weekday"),
                    method="gbm",
                    preProcess= c("center", "scale"),
                    trControl = trainControl(method = "cv",
@@ -389,29 +340,24 @@ gbmFit
 # Comparison  
 
 ```{r}
+#Predict on test data using selected  linear regression model
+lmPred <- predict(lmfit1a,  newdata=bikeDayTestSubset)
 
-lmPred <- predict(lmfit1a,  newdata=bikeTest)
-lmTest <- postResample(lmPred , bikeTest$casual)
-
-lmPred <- predict(lmfit1a,  newdata=bikeTest)
-lmTest <- postResample(lmPred , bikeTest$casual)
-
+#Get RMSE, Rsquared and MAE from predicted models for comparison
+lmTest <- postResample(lmPred , bikeDayTestSubset$casual)
 lmTest 
-boostPred <- predict (gbmFit, newdata=select (bikeTest, - casual ), n.trees=1000)
-boostTest <- postResample(boostPred, bikeTest$casual)
-boostTest
 
 #convert season variable of test data from character into digital factors for prediction
-bikeTest$season <-  factor(ifelse(bikeTest$season ==  "Spring", 1,   
-                                ifelse(bikeTest$season == "Summer", 2, 
-                                       ifelse(bikeTest$season == "Fall",3, 
+bikeDayTestSubset$season <-  factor(ifelse(bikeDayTestSubset$season ==  "Spring", 1,   
+                                ifelse(bikeDayTestSubset$season == "Summer", 2, 
+                                       ifelse(bikeDayTestSubset$season == "Fall",3, 
                                               4))))
 
 #Predict on test data using optimized boosted tree model
-boostPred <- predict (gbmFit, newdata=bikeTest )
+boostPred <- predict (gbmFit, newdata=bikeDayTestSubset )
 
 #Get RMSE, Rsquared and MAE from predicted models for comparison
-boostTest <- postResample (boostPred, bikeTest$casual)
+boostTest <- postResample (boostPred, bikeDayTestSubset$casual)
 boostTest
 
 ```
