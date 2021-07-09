@@ -158,7 +158,7 @@ Although the relationships between seasons and numeric weather measures are inte
 
 ```{r echo=FALSE}
 ###
-# Create scatter plots for bike rentals vs. our numeric variables and boxplots
+# Create scatter plots for bike rentals vs. our numeric variables and box plots
 # for bike rentals by season.
 ###
 
