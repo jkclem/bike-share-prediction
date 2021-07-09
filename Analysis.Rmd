@@ -24,6 +24,7 @@ Before doing any analysis, we need to read in the daily bike-share data and subs
 ```{r, message=FALSE}
 # Read in the daily data set.
 bikeDay <- read_csv("./Bike-Sharing-Dataset/day.csv")
+bikeDay <- filter(bikeDay, weekday == 0)
 ```
 
 Some of the variables, namely, `season`, `mnth`, `holiday`, `workingday`, and `weathersit` are categorical, but are stored numerically. Before proceeding with
@@ -102,7 +103,7 @@ The boxplots below conveys much of the same information graphically.
 bikeTrain$season <- as.factor(bikeTrain$season)
 plot1 <- ggplot(bikeTrain, aes(x=season, y=temp*41, color=season)) + 
   geom_boxplot() +
-  geom_jitter() +
+  geom_jitter(alpha=0.5) +
   labs(x="Season",
        y="Temp. (Celsius)",
        title="Box Plot of Temp. by Season") + 
@@ -110,7 +111,7 @@ plot1 <- ggplot(bikeTrain, aes(x=season, y=temp*41, color=season)) +
 
 plot2 <- ggplot(bikeTrain, aes(x=season, y=hum*100, color=season)) + 
   geom_boxplot() +
-  geom_jitter() +
+  geom_jitter(alpha=0.5) +
   labs(x="Season",
        y="Humidity",
        title="Box Plot of Humidity by Season") + 
@@ -119,7 +120,7 @@ plot2 <- ggplot(bikeTrain, aes(x=season, y=hum*100, color=season)) +
 plot3 <- ggplot(bikeTrain, aes(x=season, y=windspeed*67, 
                                         color=season)) + 
   geom_boxplot() +
-  geom_jitter() +
+  geom_jitter(alpha=0.5) +
   labs(x="Season",
        y="Wind Speed (km/h)",
        title="Box Plot of Wind Speed by Season") + 
@@ -130,23 +131,9 @@ plot_grid(plot1, plot2, plot3)
 
 
 ```{r echo=FALSE}
-# Compare weather situation counts for the two years.
-yearWeather <- table(bikeTrain$yr, bikeTrain$weathersit)
-row.names(yearWeather) <- c("2011", "2012")
-
 # Compare weather situation counts for the four seasons.
 seasonWeather <- table(bikeTrain$season, bikeTrain$weathersit)
-```
 
-```{r echo=FALSE}
-knitr::kable(
-  yearWeather,
-  col.names=c("Pleasant", "Overcast", "Unpleasant", "Severe"),
-  caption="Table 2: Weather Situation by Year"
-)
-```
-
-```{r echo=FALSE}
 knitr::kable(
   seasonWeather,
   col.names=c("Pleasant", "Overcast", "Unpleasant", "Severe"),
@@ -189,7 +176,7 @@ plot6 <- ggplot(bikeTrain, aes(x=windspeed*67, y=cnt)) +
 #Effect of season on total bike renter number
 plot7 <- ggplot(bikeTrain, aes(x=season, y=cnt, color=season)) + 
   geom_boxplot() + 
-  geom_jitter() + 
+  geom_jitter(alpha=0.5) + 
   xlab("Season") + 
   ylab("Bike Rentals") + 
   ggtitle("Bike Rentals by Season") +
@@ -202,7 +189,7 @@ plot_grid(plot4, plot5, plot6, plot7, ncol=2)
 plot8 <- ggplot(bikeTrain, aes(x=weathersit, y=cnt, 
                                         color=weathersit)) + 
   geom_boxplot() + 
-  geom_jitter() + 
+  geom_jitter(alpha=0.5) + 
   xlab("Weather Situation") + 
   ylab("Bike Rentals") + 
   ggtitle("Bike Rentals by Weather") +
@@ -210,7 +197,7 @@ plot8 <- ggplot(bikeTrain, aes(x=weathersit, y=cnt,
 
 plot9 <- ggplot(bikeTrain, aes(x=holiday, y=cnt, color=holiday)) + 
   geom_boxplot() + 
-  geom_jitter() + 
+  geom_jitter(alpha=0.5) + 
   xlab("Holiday") + 
   ylab("Bike Rentals") + 
   ggtitle("Bike Rentals by Holiday") +
@@ -219,7 +206,7 @@ plot9 <- ggplot(bikeTrain, aes(x=holiday, y=cnt, color=holiday)) +
 plot10 <- ggplot(bikeTrain, aes(x=workingday, y=cnt, 
                                         color=workingday)) + 
   geom_boxplot() + 
-  geom_jitter() + 
+  geom_jitter(alpha=0.5) + 
   xlab("Working Day") + 
   ylab("Bike Rentals") + 
   ggtitle("Bike Rentals by Working Day") +
@@ -281,7 +268,7 @@ linMod1
 ```
 ### 2 
 
-```{r}
+
 # Create a trainControl object for cross-validation.
 trCntrl2 <- trainControl(method="repeatedcv", number=5, repeats=5)
 # Evaluate a linear model of the specified form in repeated k-folds CV and fit
@@ -295,14 +282,14 @@ linMod2 <- train(
   trControl=trCntrl2
   )
 linMod2
-```
+
 
 ## Ensemble tree model
 
 Boosting is a way to slowly train a tree. Each tree is created based on previous one. As a result, the variance is aimed to decrease.  
 
 ### boosted tree 
-```{r, echo=T, results='hide'}
+{r, echo=T, results='hide'}
 #set seed for reproduciblity.
 set.seed(50)
 
@@ -317,11 +304,11 @@ gbmFit <- train (casual ~., data=select(bikeTrain, -"weekday"),
                                             number=10),
                     tuneGrid=gbmGrid)
 gbmFit 
-```
+
 
 # Comparison  
 
-```{r}
+```
 #Predict on test data using selected  linear regression model
 lmPred2 <- predict(linMod2,  newdata=bikeTest)
 
