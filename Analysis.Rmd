@@ -227,12 +227,31 @@ Now we are ready to move onto modeling.
 
 # Modeling
 
-## Linear model 
-$\text{bike rentals}_i = \beta_0 + \beta_1\text{temp} + \beta_2\text{temp}^2 + \beta_3\text{wind speed} + \beta_4\text{wind speed}^2 + \beta_5\text{humidity} + \beta_6\text{humidity}^2 + \beta_7\text{Summer} +\beta_8\text{Fall} + \beta_9\text{Winter} + \beta_{10}\text{year} + \epsilon_i$
+We want to predict bike rental demand in a given day conditional on weather-related variables, the season, and the year. These can be known *a prior*. We will try linear and ensemble modeling approaches.
 
 ```{r}
+# Set the parameters for repeated k-folds CV.
+k <- 5
+repeats <- 3
+
 # Create a trainControl object for repeated k-folds CV.
-trCntrl <- trainControl(method="repeatedcv", number=5, repeats=5)
+trCntrl <- trainControl(method="repeatedcv", number=k, repeats=repeats)
+```
+
+We are doing `r k`-folds CV with `r repeats` repeats. 
+
+## Linear models
+
+### Linear Model 1
+
+For our first model, we are assuming the number of bike rentals has quadratic relationships with temperature, wind speed, and humidity, with seasonal effects, and a linear trend for year. The linear trend of year will probably perform particularly poorly for extrapolation. As the bike rental company is around longer, their rate of yearly growth will decrease as they approach market saturation. The model is shown below.
+
+$$\text{# of rentals}_i = \beta_0 + \beta_1\text{temp}_i + \beta_2\text{temp}_i^2 + \beta_3\text{wind speed}_i + \beta_4\text{wind speed}_i^2 + \beta_5\text{humidity}_i + \beta_6\text{humidity}_i^2 + \beta_7\text{Summer}_i +\beta_8\text{Fall}_i + \beta_9\text{Winter}_i + \beta_{10}\text{year}_i + \epsilon_i$$
+Where $\epsilon_i \overset{\text{iid}}\sim \text{N}(0, \sigma^2)$.
+
+Now let's evaluate the performance of linear model 1.
+
+```{r}
 # Evaluate a linear model of the specified form in repeated k-folds CV and fit
 # it to the training set.
 linMod1 <- train(
@@ -244,11 +263,12 @@ linMod1 <- train(
   )
 linMod1
 ```
-### 2 
 
+### Linear Model 2
 
-# Create a trainControl object for cross-validation.
-trCntrl2 <- trainControl(method="repeatedcv", number=5, repeats=5)
+In our second model, we assume the same combination of variables and any quadratic effects are modeling a poisson process. This assumption is based on bike rentals being a count and our count occurs in a set amount of time (a single day).
+
+```{r}
 # Evaluate a linear model of the specified form in repeated k-folds CV and fit
 # it to the training set.
 linMod2 <- train(
@@ -257,35 +277,43 @@ linMod2 <- train(
   data=bikeTrain,
   method="glm",
   family="poisson",
-  trControl=trCntrl2
+  trControl=trCntrl
   )
+
 linMod2
+```
 
+## Ensemble Tree Models
 
-## Ensemble tree model
+We try
+
+### Random Forest
+
+### Boosted Trees 
 
 Boosting is a way to slowly train a tree. Each tree is created based on previous one. As a result, the variance is aimed to decrease.  
 
-### boosted tree 
-{r, echo=T, results='hide'}
-#set seed for reproduciblity.
-set.seed(50)
+```{r results="hide"}
+# Set grid of tuning parameters to try. 
+gbmGrid <- expand.grid(
+  interaction.depth=c(1, 4, 6), 
+  n.trees=c(100, 500),
+  shrinkage=c(0.01, 0.1),
+  n.minobsinnode=c(3, 10)
+)
 
-#set tuning parameters. 
-gbmGrid <- expand.grid(interaction.depth=4, n.trees = 1000,
-                   shrinkage=0.1,
-                   n.minobsinnode=10)
-gbmFit <- train (casual ~., data=select(bikeTrain, -"weekday"),
-                   method="gbm",
-                   preProcess= c("center", "scale"),
-                   trControl = trainControl(method = "cv",
-                                            number=10),
-                    tuneGrid=gbmGrid)
-gbmFit 
+#
+gbmFit <- train (
+  casual ~ temp + windspeed + hum + season + yr, 
+  data=select(bikeTrain, -"weekday"),
+  method="gbm",
+  preProcess= c("center", "scale"),
+  trControl = trCntrl,
+  tuneGrid=gbmGrid
+  )
 
-
-# Comparison  
-
+gbmFit$results %>%
+  filter(RMSE == min(RMSE))
 ```
 #Predict on test data using selected  linear regression model
 lmPred2 <- predict(linMod2,  newdata=bikeTest)
