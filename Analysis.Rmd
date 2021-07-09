@@ -92,9 +92,8 @@ seasonalSummary <- bikeTrain %>%
     avghum = mean(hum*100), sdhum = sd(hum*100), 
     avgwindspd = mean(windspeed*67), sdwindspd=sd(windspeed*67)
     )
-```
 
-```{r echo=FALSE}
+# Print out the table.
 knitr::kable(
   seasonalSummary,
   col.names=c("Season", 
@@ -107,14 +106,14 @@ knitr::kable(
 )
 ```
 
-The boxplots below conveys much of the same information graphically.
+The boxplots below conveys the distributions of these variables by season graphically.
 
 ```{r echo=FALSE}
 ###
 # Create boxplots of the variables mentioned above, grouped by season.
 ###
-bikeTrain$season <- as.factor(bikeTrain$season)
-plot1 <- ggplot(bikeTrain, aes(x=season, y=temp*41, color=season)) + 
+
+plot2 <- ggplot(bikeTrain, aes(x=season, y=temp*41, color=season)) + 
   geom_boxplot() +
   geom_jitter(alpha=0.5) +
   labs(x="Season",
@@ -122,7 +121,7 @@ plot1 <- ggplot(bikeTrain, aes(x=season, y=temp*41, color=season)) +
        title="Box Plot of Temp. by Season") + 
   theme(legend.position="none")
 
-plot2 <- ggplot(bikeTrain, aes(x=season, y=hum*100, color=season)) + 
+plot3 <- ggplot(bikeTrain, aes(x=season, y=hum*100, color=season)) + 
   geom_boxplot() +
   geom_jitter(alpha=0.5) +
   labs(x="Season",
@@ -130,7 +129,7 @@ plot2 <- ggplot(bikeTrain, aes(x=season, y=hum*100, color=season)) +
        title="Box Plot of Humidity by Season") + 
   theme(legend.position="none")
 
-plot3 <- ggplot(bikeTrain, aes(x=season, y=windspeed*67, 
+plot4 <- ggplot(bikeTrain, aes(x=season, y=windspeed*67, 
                                         color=season)) + 
   geom_boxplot() +
   geom_jitter(alpha=0.5) +
@@ -139,49 +138,53 @@ plot3 <- ggplot(bikeTrain, aes(x=season, y=windspeed*67,
        title="Box Plot of Wind Speed by Season") + 
   theme(legend.position="none")
 
-plot_grid(plot1, plot2, plot3)
+plot_grid(plot2, plot3, plot4)
 ```
 
+Now let's examine the counts of weather situation by season.
 
 ```{r echo=FALSE}
 # Compare weather situation counts for the four seasons.
 seasonWeather <- table(bikeTrain$season, bikeTrain$weathersit)
 
+# Display the table.
 knitr::kable(
   seasonWeather,
   col.names=c("Pleasant", "Overcast", "Unpleasant", "Severe"),
-  caption="Table 3: Weather Situation by Season"
+  caption="Table 2: Weather Situation by Season"
 )
 ```
 
-
+Although the relationships between seasons and numeric weather measures are interesting, we want to predict bike rentals. So now we look at how our numeric weather measures and seasons relate to bike rentals.
 
 ```{r}
-plot4 <- ggplot(bikeTrain, aes(x=temp*41, y=cnt)) + 
+###
+# Create scatter plots for bike rentals vs. our numeric variables and boxplots
+# for bike rentals by season.
+###
+
+plot5 <- ggplot(bikeTrain, aes(x=temp*41, y=cnt)) + 
   geom_point(color="blue", alpha=0.5) + 
   geom_smooth(method = 'lm', formula='y ~ poly(x, 2)', color="red") +
   xlab("Temp. (Celsius)") + 
   ylab("Rentals") + 
   ggtitle("Bike Rentals vs. Temp.")
 
-#Effect of temperature on total bike renter number
-plot5 <- ggplot(bikeTrain, aes(x=hum*100, y=cnt)) + 
+plot6 <- ggplot(bikeTrain, aes(x=hum*100, y=cnt)) + 
   geom_point(color="blue", alpha=0.5) + 
   geom_smooth(method = 'lm', formula='y ~ poly(x, 2)', color="red") +
   xlab("Humidity") + 
   ylab("Rentals") + 
   ggtitle("Bike Rentals vs. Humidity")
 
-#Effect of windspeed on total bike renter number
-plot6 <- ggplot(bikeTrain, aes(x=windspeed*67, y=cnt)) + 
+plot7<- ggplot(bikeTrain, aes(x=windspeed*67, y=cnt)) + 
   geom_point(color="blue", alpha=0.5) + 
   geom_smooth(method = 'lm', formula='y ~ poly(x, 2)', color="red") +
   xlab("Wind Speed (km/h)") + 
   ylab("Rentals") + 
   ggtitle("Bike Rentals vs. Wind Speed")
 
-#Effect of season on total bike renter number
-plot7 <- ggplot(bikeTrain, aes(x=season, y=cnt, color=season)) + 
+plot8 <- ggplot(bikeTrain, aes(x=season, y=cnt, color=season)) + 
   geom_boxplot() + 
   geom_jitter(alpha=0.5) + 
   xlab("Season") + 
@@ -189,11 +192,17 @@ plot7 <- ggplot(bikeTrain, aes(x=season, y=cnt, color=season)) +
   ggtitle("Bike Rentals by Season") +
   theme(legend.position="none")
 
-plot_grid(plot4, plot5, plot6, plot7, ncol=2)
+plot_grid(plot5, plot6, plot7, plot8)
 ```
 
-```{r}
-plot8 <- ggplot(bikeTrain, aes(x=weathersit, y=cnt, 
+Finally, let's examine the distributions of bike rentals by weather situation and year.
+
+```{r echo=FALSE}
+###
+# Create box plots of bike rentals by weather situation and year.
+###
+
+plot9 <- ggplot(bikeTrain, aes(x=weathersit, y=cnt, 
                                         color=weathersit)) + 
   geom_boxplot() + 
   geom_jitter(alpha=0.5) + 
@@ -202,48 +211,7 @@ plot8 <- ggplot(bikeTrain, aes(x=weathersit, y=cnt,
   ggtitle("Bike Rentals by Weather") +
   theme(legend.position="none")
 
-plot9 <- ggplot(bikeTrain, aes(x=holiday, y=cnt, color=holiday)) + 
-  geom_boxplot() + 
-  geom_jitter(alpha=0.5) + 
-  xlab("Holiday") + 
-  ylab("Bike Rentals") + 
-  ggtitle("Bike Rentals by Holiday") +
-  theme(legend.position="none")
-
-plot10 <- ggplot(bikeTrain, aes(x=workingday, y=cnt, 
-                                        color=workingday)) + 
-  geom_boxplot() + 
-  geom_jitter(alpha=0.5) + 
-  xlab("Working Day") + 
-  ylab("Bike Rentals") + 
-  ggtitle("Bike Rentals by Working Day") +
-  theme(legend.position="none")
-
-plot_grid(plot8, plot9, plot10, ncol=2)
-
-plot11 <- ggplot(bikeTrain, aes(x=windspeed*67, y=cnt)) + 
-  geom_point(color="blue", alpha=0.5) + 
-  geom_smooth(method = 'lm', formula='y ~ poly(x, 2)', color="red") +
-  xlab("Wind Speed (km/h)") + 
-  ylab("Rentals") + 
-  ggtitle("Bike Rentals vs. Wind Speed")
-plot12 <- ggplot(bikeTrain, aes(x=season, y=cnt, color=season)) + 
-  geom_boxplot() + 
-  geom_jitter(alpha=0.5) + 
-  xlab("Season") + 
-  ylab("Bike Rentals") + 
-  ggtitle("Bike Rentals by Season") +
-  theme(legend.position="none")
-plot_grid(plot9, plot10, plot11, plot12)
-
-```
-Finally, let's compare bike rental counts between our two years of data.
-
-```{r echo=FALSE}
-###
-# Create a box plot of bike rentals by year.
-###
-plot13 <- ggplot(bikeTrain, aes(as.factor(yr+2011), cnt,
+plot10 <- ggplot(bikeTrain, aes(as.factor(yr+2011), cnt,
                                 color=as.factor(yr+2011))) + 
   geom_boxplot() + 
   geom_jitter(alpha=0.5) +
@@ -251,8 +219,11 @@ plot13 <- ggplot(bikeTrain, aes(as.factor(yr+2011), cnt,
   ylab("Bike Rentals") + 
   ggtitle("Bike Rentals by Year") +
   theme(legend.position="none")
-plot13
+
+plot_grid(plot9, plot10)
 ```
+
+Now we are ready to move onto modeling.
 
 # Modeling
 
