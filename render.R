@@ -1,10 +1,10 @@
-library(rmarkdown)
-<<<<<<< HEAD
+###
+# Authors: Jingjing Li and John Clements
+# Date: 07/06/2021
+# Purpose: Run and Render the Analysis.Rmd file for each day of the week.
+###
 
-render("../project/bike-share-prediction.Rmd",
-       params=list(weekday=c(0,1,2,3,4,5,6)))
-||||||| 79c0e2b
-rmarkdown::render("../project/bike-share-prediction.Rmd",params=list(weekday=c(0,1,2,3,4,5,6)))
-=======
-rmarkdown::render("../bike-share-prediction/Analysis.Rmd",params=list(weekday=c(0,1,2,3,4,5,6)))
->>>>>>> 6869753780f6e0aacc1603a70b36d7ccf2872e1b
+library(rmarkdown)
+
+rmarkdown::render("./Analysis.Rmd",
+                  params=list(weekday=c(0,1,2,3,4,5,6)))
