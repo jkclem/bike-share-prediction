@@ -2,10 +2,12 @@
 title: "Analysis"
 author: "John Clements and Jingjing Li"
 date: "7/1/2021"
-output: html_document
-toc: TRUE
+output: 
+  html_document:
+    toc: TRUE
+params:  weekday
 ---
-#params:  weekday
+
 # Introduction  
 
 ```{r message=FALSE, warning=FALSE}
