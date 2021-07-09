@@ -285,9 +285,26 @@ linMod2
 
 ## Ensemble Tree Models
 
-We try
+We try random forests and gradient boosted trees, tuning the hyperparameter grid.
 
 ### Random Forest
+
+We try a random forest here.
+
+```{r}
+# Perform the grid search through repeated CV.
+rfFit <- train (
+  casual ~ temp + windspeed + hum + season + yr, 
+  data=select(bikeTrain, -"weekday"),
+  method="rf",
+  preProcess= c("center", "scale"),
+  trControl = trCntrl,
+  tuneGrid=expand.grid(mtry=c(100, 500, 1000))
+  )
+
+rfFit$results %>%
+  filter(RMSE == min(RMSE))
+```
 
 ### Boosted Trees 
 
@@ -302,7 +319,7 @@ gbmGrid <- expand.grid(
   n.minobsinnode=c(3, 10)
 )
 
-#
+# Perform the grid search through repeated CV.
 gbmFit <- train (
   casual ~ temp + windspeed + hum + season + yr, 
   data=select(bikeTrain, -"weekday"),
@@ -311,10 +328,13 @@ gbmFit <- train (
   trControl = trCntrl,
   tuneGrid=gbmGrid
   )
+```
 
+```{r}
 gbmFit$results %>%
   filter(RMSE == min(RMSE))
 ```
+
 #Predict on test data using selected  linear regression model
 lmPred2 <- predict(linMod2,  newdata=bikeTest)
 
