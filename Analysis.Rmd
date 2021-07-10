@@ -266,13 +266,15 @@ For our first model, we are assuming the number of bike rentals has quadratic re
 
 $\text{# of rentals}_i = \beta_0 + \beta_1\text{temp}_i + \beta_2\text{temp}_i^2 + \beta_3\text{wind speed}_i + \beta_4\text{wind speed}_i^2 + \beta_5\text{humidity}_i + \beta_6\text{humidity}_i^2 + \beta_7\text{Summer}_i +\beta_8\text{Fall}_i + \beta_9\text{Winter}_i + \beta_{10}\text{year}_i + \epsilon_i$
 
-where $\epsilon_i \overset{\text{iid}}\sim \text{N}(0, \sigma^2)$.
+where 
+
+$\epsilon_i \overset{\text{iid}}\sim \text{N}(0, \sigma^2)$
 
 Thus, our model for the distribution of bike rentals in a day for `r params$dayName` is:
 
-$$\text{# of rentals}_i \overset{iid}\sim \text{N}(\mu_i = \beta_0 + \Sigma_{j=1}^{10}\beta_ix_i, \text{ } \sigma^2)$$
+$\text{# of rentals}_i \overset{iid}\sim \text{N}(\mu_i = \beta_0 + \Sigma_{j=1}^{10}\beta_ix_i, \text{ } \sigma^2)$
 
-where $x_i$ is the $i^{th}$ variable in the regression model.
+where $x_i$ is the i^th^ variable in the regression model.
 
 We will refer to this model as the **OLS** model.
 
@@ -294,11 +296,13 @@ In our second model, we assume the same combination of variables and any quadrat
 
 $\lambda_i = \beta_0 + \beta_1\text{temp}_i + \beta_2\text{temp}_i^2 + \beta_3\text{wind speed}_i + \beta_4\text{wind speed}_i^2 + \beta_5\text{humidity}_i + \beta_6\text{humidity}_i^2 + \beta_7\text{Summer}_i +\beta_8\text{Fall}_i + \beta_9\text{Winter}_i + \beta_{10}\text{year}_i + \epsilon_i$
 
-where $\epsilon_i \overset{\text{iid}}\sim \text{N}(0, \sigma^2)$.
+where 
+
+$\epsilon_i \overset{\text{iid}}\sim \text{N}(0, \sigma^2)$
 
 Thus, our model for the distribution of bike rentals in a day for `r params$dayName` is:
 
-$$\text{# of rentals}_i \overset{iid}\sim \text{Poisson}(\lambda_i = \beta_0 + \Sigma_{j=1}^{10}\beta_ix_i)$$
+$\text{# of rentals}_i \overset{iid}\sim \text{Poisson}(\lambda_i = \beta_0 + \Sigma_{j=1}^{10}\beta_ix_i)$
 
 We will refer to this model as the **Poisson Regression** model.
 

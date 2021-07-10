@@ -335,15 +335,16 @@ decrease as they approach market saturation. The model is shown below.
 \# of rentals<sub>*i*</sub> = *β*<sub>0</sub> + *β*<sub>1</sub>temp<sub>*i*</sub> + *β*<sub>2</sub>temp<sub>*i*</sub><sup>2</sup> + *β*<sub>3</sub>wind speed<sub>*i*</sub> + *β*<sub>4</sub>wind speed<sub>*i*</sub><sup>2</sup> + *β*<sub>5</sub>humidity<sub>*i*</sub> + *β*<sub>6</sub>humidity<sub>*i*</sub><sup>2</sup> + *β*<sub>7</sub>Summer<sub>*i*</sub> + *β*<sub>8</sub>Fall<sub>*i*</sub> + *β*<sub>9</sub>Winter<sub>*i*</sub> + *β*<sub>10</sub>year<sub>*i*</sub> + *ϵ*<sub>*i*</sub>
 
 where
-$\\epsilon\_i \\overset{\\text{iid}}\\sim \\text{N}(0, \\sigma^2)$.
+
+$\\epsilon\_i \\overset{\\text{iid}}\\sim \\text{N}(0, \\sigma^2)$
 
 Thus, our model for the distribution of bike rentals in a day for Monday
 is:
 
-$$\\text{\# of rentals}\_i \\overset{iid}\\sim \\text{N}(\\mu\_i = \\beta\_0 + \\Sigma\_{j=1}^{10}\\beta\_ix\_i, \\text{ } \\sigma^2)$$
+$\\text{\# of rentals}\_i \\overset{iid}\\sim \\text{N}(\\mu\_i = \\beta\_0 + \\Sigma\_{j=1}^{10}\\beta\_ix\_i, \\text{ } \\sigma^2)$
 
-where *x*<sub>*i*</sub> is the *i*<sup>*t**h*</sup> variable in the
-regression model.
+where *x*<sub>*i*</sub> is the i<sup>th</sup> variable in the regression
+model.
 
 We will refer to this model as the **OLS** model.
 
@@ -370,12 +371,13 @@ distribution is:
 *λ*<sub>*i*</sub> = *β*<sub>0</sub> + *β*<sub>1</sub>temp<sub>*i*</sub> + *β*<sub>2</sub>temp<sub>*i*</sub><sup>2</sup> + *β*<sub>3</sub>wind speed<sub>*i*</sub> + *β*<sub>4</sub>wind speed<sub>*i*</sub><sup>2</sup> + *β*<sub>5</sub>humidity<sub>*i*</sub> + *β*<sub>6</sub>humidity<sub>*i*</sub><sup>2</sup> + *β*<sub>7</sub>Summer<sub>*i*</sub> + *β*<sub>8</sub>Fall<sub>*i*</sub> + *β*<sub>9</sub>Winter<sub>*i*</sub> + *β*<sub>10</sub>year<sub>*i*</sub> + *ϵ*<sub>*i*</sub>
 
 where
-$\\epsilon\_i \\overset{\\text{iid}}\\sim \\text{N}(0, \\sigma^2)$.
+
+$\\epsilon\_i \\overset{\\text{iid}}\\sim \\text{N}(0, \\sigma^2)$
 
 Thus, our model for the distribution of bike rentals in a day for Monday
 is:
 
-$$\\text{\# of rentals}\_i \\overset{iid}\\sim \\text{Poisson}(\\lambda\_i = \\beta\_0 + \\Sigma\_{j=1}^{10}\\beta\_ix\_i)$$
+$\\text{\# of rentals}\_i \\overset{iid}\\sim \\text{Poisson}(\\lambda\_i = \\beta\_0 + \\Sigma\_{j=1}^{10}\\beta\_ix\_i)$
 
 We will refer to this model as the **Poisson Regression** model.
 
