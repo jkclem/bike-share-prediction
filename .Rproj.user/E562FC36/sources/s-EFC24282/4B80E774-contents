@@ -4,7 +4,6 @@
 # Purpose: Run and Render the Analysis.Rmd file for each day of the week.
 ###
 
-
 for(weekday in c(0,1,2,3,4,5,6)){
   rmarkdown::render("Analysis.Rmd",
                     output_file = paste0("Reports/", weekday, '.html'),
