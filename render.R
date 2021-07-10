@@ -19,5 +19,6 @@ for(weekday in c(0,1,2,3,4,5,6)){
                                          weekdayList[[weekday+1]], 
                                          ".html"),
                     # and pass the weekday id as the weekday parameter.
-                    params=list(weekday=weekday))
+                    params=list(weekday=weekday,
+                                dayName=weekdayList[[weekday+1]]))
 }

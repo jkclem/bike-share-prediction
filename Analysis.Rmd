@@ -1,5 +1,5 @@
 ---
-title: "Analysis"
+title: "`r params$dayName` Analysis"
 author: "John Clements and Jingjing Li"
 date: "7/1/2021"
 output: 
@@ -7,6 +7,7 @@ output:
     toc: TRUE
 params: 
   weekday: weekday
+  dayName: dayName
 ---
 
 # Introduction  
@@ -21,7 +22,7 @@ library(rmarkdown)
 
 # Reading in and Subsetting the Data
 
-Before doing any analysis, we need to read in the daily bike-share data and subset for the day of interest.
+Before doing any analysis, we need to read in the daily bike-share data and subset for all the `r params$dayName`s in the data set.
 
 ```{r, message=FALSE}
 # Read in the daily data set.
@@ -69,7 +70,7 @@ With our data sets created, we can now begin exploring the data.
 
 # Data Exploration
 
-Let's begin our exploration with a histogram of the number of bike rentals in a day for our given day of the week.
+Let's begin our exploration with a histogram of the number of bike rentals in a day for all the `r params$dayName`s in the data to get an idea of the distribution.
 
 ```{r echo=FALSE}
 # Create a histogram of bike rentals in a day.
@@ -108,7 +109,7 @@ knitr::kable(
 )
 ```
 
-The boxplots below conveys the distributions of these variables by season graphically.
+The box plots below gives a better sense of the distributions of these variables by season, than just the two summary statistics.
 
 ```{r echo=FALSE}
 ###
@@ -225,11 +226,11 @@ plot10 <- ggplot(bikeTrain, aes(as.factor(yr+2011), cnt,
 plot_grid(plot9, plot10)
 ```
 
-Now we are ready to move onto modeling.
+We now have an idea of how our predictive features relate to the number of bike rentals, so we are ready to move onto modeling.
 
 # Modeling
 
-We want to predict bike rental demand in a given day conditional on weather-related variables, the season, and the year. These can be known *a prior*. We will try linear and ensemble modeling approaches.
+We want to predict bike rental demand in a given day conditional on weather-related variables, the season, and the year. These can be known *a priori* (assuming a weather forecast for the next day is fairly accurate). We will try linear and ensemble modeling approaches.
 
 ```{r}
 # Set the parameters for repeated k-folds CV.
@@ -244,14 +245,21 @@ We are doing `r k`-folds CV with `r repeats` repeats.
 
 ## Linear models
 
-### Linear Model 1
+### Linear Model 1 (OLS)
 
 For our first model, we are assuming the number of bike rentals has quadratic relationships with temperature, wind speed, and humidity, with seasonal effects, and a linear trend for year. The linear trend of year will probably perform particularly poorly for extrapolation. As the bike rental company is around longer, their rate of yearly growth will decrease as they approach market saturation. The model is shown below.
 
-$$\text{# of rentals}_i = \beta_0 + \beta_1\text{temp}_i + \beta_2\text{temp}_i^2 + \beta_3\text{wind speed}_i + \beta_4\text{wind speed}_i^2 + \beta_5\text{humidity}_i + \beta_6\text{humidity}_i^2 + \beta_7\text{Summer}_i +\beta_8\text{Fall}_i + \beta_9\text{Winter}_i + \beta_{10}\text{year}_i + \epsilon_i$$
-Where $\epsilon_i \overset{\text{iid}}\sim \text{N}(0, \sigma^2)$.
+$\text{# of rentals}_i = \beta_0 + \beta_1\text{temp}_i + \beta_2\text{temp}_i^2 + \beta_3\text{wind speed}_i + \beta_4\text{wind speed}_i^2 + \beta_5\text{humidity}_i + \beta_6\text{humidity}_i^2 + \beta_7\text{Summer}_i +\beta_8\text{Fall}_i + \beta_9\text{Winter}_i + \beta_{10}\text{year}_i + \epsilon_i$
 
-Now let's evaluate the performance of linear model 1.
+where $\epsilon_i \overset{\text{iid}}\sim \text{N}(0, \sigma^2)$.
+
+Thus, our model for the distribution of bike rentals in a day for `r params$dayName` is:
+
+$$\text{# of rentals}_i \overset{iid}\sim \text{N}(\mu_i = \beta_0 + \Sigma_{j=1}^{10}\beta_ix_i, \text{ } \sigma^2)$$
+
+where $x_i$ is the $i^{th}$ variable in the regression model.
+
+We will refer to this model as the **OLS** model.
 
 ```{r}
 # Evaluate a linear model of the specified form in repeated k-folds CV and fit
@@ -263,12 +271,21 @@ linMod1 <- train(
   method="lm",
   trControl=trCntrl
   )
-linMod1
 ```
 
-### Linear Model 2
+### Linear Model 2 (Poisson Regression)
 
-In our second model, we assume the same combination of variables and any quadratic effects are modeling a poisson process. This assumption is based on bike rentals being a count and our count occurs in a set amount of time (a single day).
+In our second model, we assume the same combination of variables and any quadratic effects are modeling a poisson process. This assumption is based on bike rentals being a count and our count occurs in a set amount of time (a single day). Our model for the $\lambda$ parameter of the Poisson distribution is:
+
+$\lambda_i = \beta_0 + \beta_1\text{temp}_i + \beta_2\text{temp}_i^2 + \beta_3\text{wind speed}_i + \beta_4\text{wind speed}_i^2 + \beta_5\text{humidity}_i + \beta_6\text{humidity}_i^2 + \beta_7\text{Summer}_i +\beta_8\text{Fall}_i + \beta_9\text{Winter}_i + \beta_{10}\text{year}_i + \epsilon_i$
+
+where $\epsilon_i \overset{\text{iid}}\sim \text{N}(0, \sigma^2)$.
+
+Thus, our model for the distribution of bike rentals in a day for `r params$dayName` is:
+
+$$\text{# of rentals}_i \overset{iid}\sim \text{Poisson}(\lambda_i = \beta_0 + \Sigma_{j=1}^{10}\beta_ix_i)$$
+
+We will refer to this model as the **Poisson Regression** model.
 
 ```{r}
 # Evaluate a linear model of the specified form in repeated k-folds CV and fit
@@ -281,17 +298,19 @@ linMod2 <- train(
   family="poisson",
   trControl=trCntrl
   )
-
-linMod2
 ```
 
 ## Ensemble Tree Models
 
-We try random forests and gradient boosted trees, tuning the hyper-parameter grid.
+Tree-based ensemble methods are very popular in applied machine learning due to their ability to model non-linear and interaction effects. Here we try the two most popular ensemble methods: random forests and gradient boosted trees. We also perform a grid search in our repeated k-folds CV to tune our models for the best hyper-parameters.
 
 ### Random Forest
 
-We try a random forest here.
+Random forests create **B** boostrapped samples and fit trees to each of the boostrapped samples. At each split in each tree, only a random subset of variables are considered. Both steps push the trees to grow independently on one another. For regression, the predictions of trees are averaged to get the final predicted value. For classification, the majority vote of class membership is generally used to predict the class.
+
+The combination of pushing the trees to grow independently and averaging should lower the variance of our prediction. Given the mean squared error can be decomposed into the squared bias plus the variance of the model, this will hopefully decrease the MSE (if the reduction in variance is greater than the increase in squared bias).
+
+We now fit our random forest model, hereafter referred to as the **Random Forest** model, trying 100, 500, and 1000 trees.
 
 ```{r}
 # Perform the grid search through repeated CV.
@@ -303,14 +322,13 @@ rfFit <- train (
   trControl = trCntrl,
   tuneGrid=expand.grid(mtry=c(100, 500, 1000))
   )
-
-rfFit$results %>%
-  filter(RMSE == min(RMSE))
 ```
 
 ### Boosted Trees 
 
-Boosting is one of tree based statistical ensemble learning methods for regression or classification. Like other tree based methods, boosted tree involves in splitting predictor space into regions. But it has also some unique features: the tree growth is sequential and slow, which means each tree is modified based on previous one. Three parameters are used to tune boosting process: number of trees B, shrinkage parameter lambda bad split number d which control the complexity of boosted enambles.Boosted tree tends to decrease bias.   
+Boosting is one of tree based statistical ensemble learning methods for regression or classification. Like other tree based methods, boosted tree involves in splitting predictor space into regions. But it has also some unique features: the tree growth is sequential and slow, which means each tree is modified based on previous one. Three parameters are used to tune boosting process: number of trees B, shrinkage parameter lambda bad split number d which control the complexity of boosted ensembles. Boosted tree tends to decrease bias.
+
+Now we can choose our hyper-parameters through repeated k-folds CV and fit our model, which we refer to as the **Boosted Trees** model.
 
 ```{r results="hide"}
 # Set grid of tuning parameters to try. 
@@ -332,12 +350,9 @@ gbmFit <- train (
   )
 ```
 
-```{r}
-gbmFit$results %>%
-  filter(RMSE == min(RMSE))
-```
+## Comparing the Models
 
-### Comparing the Models
+With the repeated k-folds CV completed and our models fit, we can evaluate their performance in CV and on the withheld testing set.
 
 Let's evaluate their repeated k-folds CV performance first.
 
@@ -393,6 +408,18 @@ knitr::kable(
 )
 ```
 
+```{r echo=FALSE}
+# Extract the best model.
+bestModelCV <- cvPerformance %>%
+  mutate(Model = modelNames) %>%
+  filter(RMSE == min(RMSE)) %>%
+  select(Model, RMSE)
+bestModelNameCV <- bestModelCV$Model
+bestRMSECV <- round(bestModelCV$RMSE, 2)
+```
+
+The best performing model in repeated k-folds CV is the `r bestModelNameCV` with an RMSE of `r bestRMSECV`. Usually, we would pick the best performing model here to test on the testing data, but we will compare them all this time.
+
 Now let's look at their test set performance.
 
 ```{r echo=FALSE}
@@ -431,4 +458,4 @@ bestModelName <- bestModel$Model
 bestRMSE <- round(bestModel$RMSE, 2)
 ```
 
-The best performing model is the `r bestModelName` with an RMSE of `r bestRMSE`.
+The best performing model on the testing set is the `r bestModelName` with an RMSE of `r bestRMSE`.
