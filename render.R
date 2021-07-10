@@ -16,8 +16,7 @@ for(weekday in c(0,1,2,3,4,5,6)){
                     # as the corresponding weekday by adding 1 to the id to get
                     # the weekday name for the file name...
                     output_file = paste0("Reports/", 
-                                         weekdayList[[weekday+1]], 
-                                         ".html"),
+                                         weekdayList[[weekday+1]]),
                     # and pass the weekday id as the weekday parameter.
                     params=list(weekday=weekday,
                                 dayName=weekdayList[[weekday+1]]))
