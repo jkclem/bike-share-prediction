@@ -3,7 +3,7 @@
     "path": "~/Documents/NCSU/Classes/Summer2021/ST558/Projects/Project 2/bike-share-prediction/README.md",
     "project_path": "README.md",
     "type": "markdown",
-    "hash": "2245618857",
+    "hash": "2254939223",
     "contents": "",
     "dirty": false,
     "created": 1625894860304.0,
@@ -12,15 +12,15 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "24,66",
-        "scrollLine": "7"
+        "cursorPosition": "24,23",
+        "scrollLine": "19"
     },
     "folds": "",
-    "lastKnownWriteTime": 1625895491,
+    "lastKnownWriteTime": 1625900095,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1625895491364,
+    "last_content_update": 1625900095761,
     "read_only": false,
     "read_only_alternatives": []
 }

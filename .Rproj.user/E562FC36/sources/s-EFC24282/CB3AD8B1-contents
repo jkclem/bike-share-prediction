@@ -22,7 +22,7 @@ The following packages are required for this project:
 - The analysis for [Thursday is available here](Reports/Thursday.html)
 - The analysis for [Friday is available here](Reports/Friday.html)
 - The analysis for [Saturday is available here](Reports/Saturday.html)
-- The analysis for [Sunnday is available here](Reports/Sunday.html)
+- The analysis for [Sunday is available here](Reports/Sunday.html)
 
 ## Automation
 
