@@ -16,13 +16,13 @@ The following packages are required for this project:
 
 ## Output Files
 
-- The analysis for [Monday is available here]("Reports/Monday.html")
-- The analysis for [Tueday is available here]("Reports/Tuesday.html")
-- The analysis for [Wednesday is available here]("Reports/Wednesday.html")
-- The analysis for [Thursday is available here]("Reports/Thursday.html")
-- The analysis for [Friday is available here]("Reports/Friday.html")
-- The analysis for [Saturday is available here]("Reports/Saturday.html")
-- The analysis for [Sunnday is available here]("Reports/Sunday.html")
+- The analysis for [Monday is available here](Reports/Monday.html)
+- The analysis for [Tueday is available here](Reports/Tuesday.html)
+- The analysis for [Wednesday is available here](Reports/Wednesday.html)
+- The analysis for [Thursday is available here](Reports/Thursday.html)
+- The analysis for [Friday is available here](Reports/Friday.html)
+- The analysis for [Saturday is available here](Reports/Saturday.html)
+- The analysis for [Sunnday is available here](Reports/Sunday.html)
 
 ## Automation
 
