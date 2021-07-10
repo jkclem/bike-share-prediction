@@ -336,7 +336,7 @@ decrease as they approach market saturation. The model is shown below.
 
 where
 
-$\\epsilon\_i \\overset{\\text{iid}}\\sim \\text{N}(0, \\sigma^2)$
+*ϵ*<sub>*i*</sub> ∼ N(0, *σ*<sup>2</sup>)
 
 Thus, our model for the distribution of bike rentals in a day for
 Wednesday is:
@@ -372,7 +372,7 @@ distribution is:
 
 where
 
-$\\epsilon\_i \\overset{\\text{iid}}\\sim \\text{N}(0, \\sigma^2)$
+*ϵ*<sub>*i*</sub> ∼ N(0, *σ*<sup>2</sup>)
 
 Thus, our model for the distribution of bike rentals in a day for
 Wednesday is:

@@ -268,7 +268,7 @@ $\text{# of rentals}_i = \beta_0 + \beta_1\text{temp}_i + \beta_2\text{temp}_i^2
 
 where 
 
-$\epsilon_i \overset{\text{iid}}\sim \text{N}(0, \sigma^2)$
+$\epsilon_i \sim \text{N}(0, \sigma^2)$
 
 Thus, our model for the distribution of bike rentals in a day for `r params$dayName` is:
 
@@ -298,7 +298,7 @@ $\lambda_i = \beta_0 + \beta_1\text{temp}_i + \beta_2\text{temp}_i^2 + \beta_3\t
 
 where 
 
-$\epsilon_i \overset{\text{iid}}\sim \text{N}(0, \sigma^2)$
+$\epsilon_i \sim \text{N}(0, \sigma^2)$
 
 Thus, our model for the distribution of bike rentals in a day for `r params$dayName` is:
 
