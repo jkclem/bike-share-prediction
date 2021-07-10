@@ -310,7 +310,7 @@ rfFit$results %>%
 
 ### Boosted Trees 
 
-Boosting is a way to slowly train a tree. Each tree is created based on previous one. As a result, the variance is aimed to decrease.  
+Boosting is one of tree based statistical ensemble learning methods for regression or classification. Like other tree based methods, boosted tree involves in splitting predictor space into regions. But it has also some unique features: the tree growth is sequential and slow, which means each tree is modified based on previous one. Three parameters are used to tune boosting process: number of trees B, shrinkage parameter lambda bad split number d which control the complexity of boosted enambles.Boosted tree tends to decrease bias.   
 
 ```{r results="hide"}
 # Set grid of tuning parameters to try. 
