@@ -3,8 +3,9 @@ title: "`r params$dayName` Analysis"
 author: "John Clements and Jingjing Li"
 date: "7/1/2021"
 output: 
-  html_document:
-    toc: TRUE
+  github_document:
+    toc: true
+    html_preview: false
 params: 
   weekday: weekday
   dayName: dayName
@@ -12,9 +13,9 @@ params:
 
 # Introduction
 
-Our data set contains daily bike rental counts, information about the weather on a given day, when the day was (date, season, month, and year), and whether the day was a holiday or working day for the Capital Bikeshare system in Washington D.C. in 2011 and 2012. We want to predict the number of rentals on a given weekday (here `r params$dayName`). 
+Our data set contains daily bike rental counts, information about the weather on a given day, when the day was (date, season, month, and year), and whether the day was a holiday or working day for the Capital Bikeshare system in Washington D.C. in 2011 and 2012. We want to predict the total number of rentals on a given weekday (here `r params$dayName`). The data set breaks the rides down into casual and registered riders, but we will predict the total number of bike rentals (`cnt`).
 
-We will make our predictions using the weather variables, the season, and the year. The weather related variables are `temp` (normalized temperature), `hum` (normalized humidity), `windspeed` (normalized wind speed), and `weathersit`. The variable `weathersit` is a factor going from 1 to 4, with 1 being nice weather and progressing to 4, which covers severe weather conditions. The `season` variable is a factor for the four seasons, and `yr` is the year. A more in depth description of the data is located [here](Bike-Sharing-Dataset/Readme.txt).
+We will make our predictions using the weather variables, the season, and the year. The weather related variables are `temp` (normalized temperature), `hum` (normalized humidity), `windspeed` (normalized wind speed), and `weathersit`. The variable `weathersit` is a factor going from 1 to 4, with 1 being nice weather and progressing to 4, which covers severe weather conditions. The `season` variable is a factor for the four seasons, and `yr` is the year. A more in depth description of the data is located [here](https://github.com/jkclem/bike-share-prediction/blob/main/Bike-Sharing-Dataset/Readme.txt).
 
 To perform our analysis, we will:
 
