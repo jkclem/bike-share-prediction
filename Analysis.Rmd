@@ -272,7 +272,7 @@ $\epsilon_i \sim \text{N}(0, \sigma^2)$
 
 Thus, our model for the distribution of bike rentals in a day for `r params$dayName` is:
 
-$\text{# of rentals}_i \overset{iid}\sim \text{N}(\mu_i = \beta_0 + \Sigma_{j=1}^{10}\beta_ix_i, \text{ } \sigma^2)$
+$\text{# of rentals}_i \sim \text{N}(\mu_i = \beta_0 + \Sigma_{j=1}^{10}\beta_ix_i, \text{ } \sigma^2)$
 
 where $x_i$ is the i^th^ variable in the regression model.
 
@@ -302,7 +302,7 @@ $\epsilon_i \sim \text{N}(0, \sigma^2)$
 
 Thus, our model for the distribution of bike rentals in a day for `r params$dayName` is:
 
-$\text{# of rentals}_i \overset{iid}\sim \text{Poisson}(\lambda_i = \beta_0 + \Sigma_{j=1}^{10}\beta_ix_i)$
+$\text{# of rentals}_i \sim \text{Poisson}(\lambda_i = \beta_0 + \Sigma_{j=1}^{10}\beta_ix_i)$
 
 We will refer to this model as the **Poisson Regression** model.
 

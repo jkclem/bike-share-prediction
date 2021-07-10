@@ -341,7 +341,7 @@ where
 Thus, our model for the distribution of bike rentals in a day for
 Thursday is:
 
-$\\text{\# of rentals}\_i \\overset{iid}\\sim \\text{N}(\\mu\_i = \\beta\_0 + \\Sigma\_{j=1}^{10}\\beta\_ix\_i, \\text{ } \\sigma^2)$
+\# of rentals<sub>*i*</sub> ∼ N(*μ*<sub>*i*</sub> = *β*<sub>0</sub> + *Σ*<sub>*j* = 1</sub><sup>10</sup>*β*<sub>*i*</sub>*x*<sub>*i*</sub>,  *σ*<sup>2</sup>)
 
 where *x*<sub>*i*</sub> is the i<sup>th</sup> variable in the regression
 model.
@@ -377,7 +377,7 @@ where
 Thus, our model for the distribution of bike rentals in a day for
 Thursday is:
 
-$\\text{\# of rentals}\_i \\overset{iid}\\sim \\text{Poisson}(\\lambda\_i = \\beta\_0 + \\Sigma\_{j=1}^{10}\\beta\_ix\_i)$
+\# of rentals<sub>*i*</sub> ∼ Poisson(*λ*<sub>*i*</sub> = *β*<sub>0</sub> + *Σ*<sub>*j* = 1</sub><sup>10</sup>*β*<sub>*i*</sub>*x*<sub>*i*</sub>)
 
 We will refer to this model as the **Poisson Regression** model.
 
