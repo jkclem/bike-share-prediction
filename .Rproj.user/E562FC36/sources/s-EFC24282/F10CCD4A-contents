@@ -10,7 +10,21 @@ params:
   dayName: dayName
 ---
 
-# Introduction  
+# Introduction
+
+Our data set contains daily bike rental counts, information about the weather on a given day, when the day was (date, season, month, and year), and whether the day was a holiday or working day for the Capital Bikeshare system in Washington D.C. in 2011 and 2012. We want to predict the number of rentals on a given weekday (here `r params$dayName`). 
+
+We will make our predictions using the weather variables, the season, and the year. The weather related variables are `temp` (normalized temperature), `hum` (normalized humidity), `windspeed` (normalized wind speed), and `weathersit`. The variable `weathersit` is a factor going from 1 to 4, with 1 being nice weather and progressing to 4, which covers severe weather conditions. The `season` variable is a factor for the four seasons, and `yr` is the year. A more in depth description of the data is located [here](Bike-Sharing-Dataset/Readme.txt).
+
+To perform our analysis, we will:
+
+- load in the required packages
+- read in the data and subset for `r params$dayName`s and split into training and testings sets
+- do exploratory analysis through summary statistics and data visualization
+- evaluate models in repeated k-folds cross-validation (CV)
+- evaluate the models on the withheld testing data
+
+Now let's get started by reading in loading the required packages.
 
 ```{r message=FALSE, warning=FALSE}
 library(readr)
@@ -72,7 +86,7 @@ With our data sets created, we can now begin exploring the data.
 
 Let's begin our exploration with a histogram of the number of bike rentals in a day for all the `r params$dayName`s in the data to get an idea of the distribution.
 
-```{r echo=FALSE}
+```{r}
 # Create a histogram of bike rentals in a day.
 plot1 <- ggplot(bikeTrain, aes(x=cnt)) + 
   geom_histogram(bins=25, color="blue", fill="lightblue") + 
@@ -85,7 +99,7 @@ plot1
 
 Next, let's examine the numeric variables related to weather: temperature, humidity, and wind speed. Below are the means and standard deviations for each of these variables by season.
 
-```{r echo=FALSE}
+```{r}
 # Find the means and standard deviations of temperature, humidity and windspeed
 # by season.
 seasonalSummary <- bikeTrain %>% 
@@ -111,7 +125,7 @@ knitr::kable(
 
 The box plots below gives a better sense of the distributions of these variables by season, than just the two summary statistics.
 
-```{r echo=FALSE}
+```{r}
 ###
 # Create boxplots of the variables mentioned above, grouped by season.
 ###
@@ -146,7 +160,7 @@ plot_grid(plot2, plot3, plot4)
 
 Now let's examine the counts of weather situation by season.
 
-```{r echo=FALSE}
+```{r}
 # Compare weather situation counts for the four seasons.
 seasonWeather <- table(bikeTrain$season, bikeTrain$weathersit)
 
@@ -160,7 +174,7 @@ knitr::kable(
 
 Although the relationships between seasons and numeric weather measures are interesting, we want to predict bike rentals. So now we look at how our numeric weather measures and seasons relate to bike rentals.
 
-```{r echo=FALSE}
+```{r}
 ###
 # Create scatter plots for bike rentals vs. our numeric variables and box plots
 # for bike rentals by season.
@@ -200,7 +214,7 @@ plot_grid(plot5, plot6, plot7, plot8)
 
 Finally, let's examine the distributions of bike rentals by weather situation and year.
 
-```{r echo=FALSE}
+```{r}
 ###
 # Create box plots of bike rentals by weather situation and year.
 ###
@@ -356,7 +370,7 @@ With the repeated k-folds CV completed and our models fit, we can evaluate their
 
 Let's evaluate their repeated k-folds CV performance first.
 
-```{r echo=FALSE}
+```{r}
 # Create a list of models and vector of model names.
 modelList <- list(linMod1, linMod2, rfFit, gbmFit)
 modelNames <- c("OLS", "Poisson Regression", "Random Forest", "Boosted Trees")
@@ -400,6 +414,16 @@ cvPerformance <- data.frame(
   MAE=cvMAE
 )
 
+# Extract the best model's name and RMSE.
+bestModelCV <- cvPerformance %>%
+  mutate(Model = modelNames) %>%
+  filter(RMSE == min(RMSE)) %>%
+  select(Model, RMSE)
+# Save the model name and RMSE to 2 decimal places as vairables.
+bestModelNameCV <- bestModelCV$Model
+bestRMSECV <- round(bestModelCV$RMSE, 2)
+
+# Display the table in a neat format.
 knitr::kable(
   cvPerformance,
   digits=2,
@@ -408,21 +432,11 @@ knitr::kable(
 )
 ```
 
-```{r echo=FALSE}
-# Extract the best model.
-bestModelCV <- cvPerformance %>%
-  mutate(Model = modelNames) %>%
-  filter(RMSE == min(RMSE)) %>%
-  select(Model, RMSE)
-bestModelNameCV <- bestModelCV$Model
-bestRMSECV <- round(bestModelCV$RMSE, 2)
-```
-
 The best performing model in repeated k-folds CV is the `r bestModelNameCV` with an RMSE of `r bestRMSECV`. Usually, we would pick the best performing model here to test on the testing data, but we will compare them all this time.
 
 Now let's look at their test set performance.
 
-```{r echo=FALSE}
+```{r}
 evaluatePeformance <- function(model, dataEval, target){
   ###
   # This function takes in a fit model, testing data (tibble), and a target
@@ -442,20 +456,20 @@ colnames(testPerformances) <- modelNames
 # Convert the table to data.frame.
 testPerformances <- as.data.frame(t(testPerformances))
 
-knitr::kable(
-  testPerformances,
-  digits=2,
-  caption="Table 4: Test Set Performance Summary",)
-```
-
-```{r echo=FALSE}
-# Extract the best model.
+# Extract the best model's name and RMSE.
 bestModel <- testPerformances %>%
   mutate(Model = modelNames) %>%
   filter(RMSE == min(RMSE)) %>%
   select(Model, RMSE)
+# Save the model name and RMSE to 2 decimal places as vairables.
 bestModelName <- bestModel$Model
 bestRMSE <- round(bestModel$RMSE, 2)
+
+# Display the table in a neat format.
+knitr::kable(
+  testPerformances,
+  digits=2,
+  caption="Table 4: Test Set Performance Summary",)
 ```
 
 The best performing model on the testing set is the `r bestModelName` with an RMSE of `r bestRMSE`.

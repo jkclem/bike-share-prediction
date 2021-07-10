@@ -1,8 +1,0 @@
-"0","# Extract the best model."
-"0","bestModelCV <- cvPerformances %>%"
-"0","  mutate(Model = modelNames) %>%"
-"0","  filter(RMSE == min(RMSE)) %>%"
-"0","  select(Model, RMSE)"
-"2","Error in mutate(., Model = modelNames) : 
-  object 'cvPerformances' not found
-"
