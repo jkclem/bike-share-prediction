@@ -19,23 +19,35 @@ John Clements and Jingjing Li
 
 # Introduction
 
-Our data set contains daily bike rental counts, information about the
-weather on a given day, when the day was (date, season, month, and
-year), and whether the day was a holiday or working day for the Capital
-Bikeshare system in Washington D.C. in 2011 and 2012. We want to predict
-the total number of rentals on a given weekday (here Wednesday). The
-data set breaks the rides down into casual and registered riders, but we
-will predict the total number of bike rentals (`cnt`).
+This project aims at analyzing and creating predictive models on “Bike
+Sharing Dataset” at [“UCI Machine Learning
+Repository”](https://archive.ics.uci.edu/ml/datasets/Bike+Sharing+Dataset#)
+Where core data set is related to two-year log (2011, 2012) from Capital
+Bikeshare system, Washington D.C. The data set mainly contains
+information about the weather on a given day, when the day was (date,
+season, month, and year), and whether the day was a holiday or working
+day as well as bike rental counts including casual, registered riders
+and total number of bike rentals (`cnt`).
 
-We will make our predictions using the weather variables, the season,
-and the year. The weather related variables are `temp` (normalized
+In our study the total number of rentals on a given weekday (here
+Wednesday) will act as the response, which makes more sense for bike
+rental business compared to only the casual or the registered .
+Explanatory variables comprise the weather variables, the season, and
+the year. The weather related variables are `temp` (normalized
 temperature), `hum` (normalized humidity), `windspeed` (normalized wind
 speed), and `weathersit`. The variable `weathersit` is a factor going
 from 1 to 4, with 1 being nice weather and progressing to 4, which
 covers severe weather conditions. The `season` variable is a factor for
 the four seasons, and `yr` is the year.
 
-To perform our analysis, we will:
+We analyze the data using plots and tables to see the distribution of
+bike rentals, the weather situation of different seasons and construct
+different models (two linear and two tree models) to predict bike rental
+numbers affected by `season`, `yr` and weather situations represented by
+`temp`,`hum` and`windspeed`, compare those models and identify the best
+one.
+
+The main steps includes:
 
 -   load in the required packages
 -   read in the data and subset for Wednesdays and split into training
@@ -131,8 +143,8 @@ temperature, humidity, and wind speed. Below are the means and standard
 deviations for each of these variables by season.
 
 ``` r
-# Find the means and standard deviations of temperature, humidity and windspeed
-# by season.
+# Find the means and standard deviations of temperature, humidity and windspeed by season.
+# Note that normalized data are converted back into original data using following formulas.
 seasonalSummary <- bikeTrain %>% 
   group_by(season) %>% 
   summarise(
@@ -362,11 +374,15 @@ linMod1 <- train(
 
 ### Linear Model 2 (Poisson Regression)
 
-In our second model, we assume the same combination of variables and any
-quadratic effects are modeling a poisson process. This assumption is
-based on bike rentals being a count and our count occurs in a set amount
-of time (a single day). Our model for the *λ* parameter of the Poisson
-distribution is:
+In our second linear model, poisson process is applied to the same
+combination of variables and any quadratic effects.Poisson regression
+model is one of generalized linear models
+(*g*(*μ*) = *β*<sub>0</sub> + *β*<sub>1</sub>*x*<sub>1</sub> + *β*<sub>2</sub>*x*<sub>2</sub> + ... + *β*<sub>*p*</sub>*x*<sub>*p*</sub>
+where *μ* denotes the mean corresponding to x sets.) for modeling count
+data. Because bike rentals being a count and our count occurs in a set
+amount of time (a single day), it is reasonable to use poisson
+regression for modeling here. . Our model for the *λ* parameter of the
+Poisson distribution is:
 
 *λ*<sub>*i*</sub> = *β*<sub>0</sub> + *β*<sub>1</sub>temp<sub>*i*</sub> + *β*<sub>2</sub>temp<sub>*i*</sub><sup>2</sup> + *β*<sub>3</sub>wind speed<sub>*i*</sub> + *β*<sub>4</sub>wind speed<sub>*i*</sub><sup>2</sup> + *β*<sub>5</sub>humidity<sub>*i*</sub> + *β*<sub>6</sub>humidity<sub>*i*</sub><sup>2</sup> + *β*<sub>7</sub>Summer<sub>*i*</sub> + *β*<sub>8</sub>Fall<sub>*i*</sub> + *β*<sub>9</sub>Winter<sub>*i*</sub> + *β*<sub>10</sub>year<sub>*i*</sub> + *ϵ*<sub>*i*</sub>
 
@@ -538,15 +554,15 @@ knitr::kable(
 
 |                    |   RMSE | Rsquared |    MAE |
 |:-------------------|-------:|---------:|-------:|
-| OLS                | 767.74 |     0.87 | 607.32 |
-| Poisson Regression | 711.15 |     0.88 | 557.25 |
-| Random Forest      | 886.85 |     0.82 | 680.82 |
-| Boosted Trees      | 729.44 |     0.88 | 577.15 |
+| OLS                | 715.33 |     0.88 | 574.10 |
+| Poisson Regression | 669.40 |     0.90 | 528.18 |
+| Random Forest      | 921.51 |     0.82 | 706.58 |
+| Boosted Trees      | 756.19 |     0.86 | 605.77 |
 
 Table 3: Repeated k-folds CV Performance Summary
 
 The best performing model in repeated k-folds CV is the Poisson
-Regression with an RMSE of 711.15. Usually, we would pick the best
+Regression with an RMSE of 669.4. Usually, we would pick the best
 performing model here to test on the testing data, but we will compare
 them all this time.
 
@@ -592,8 +608,8 @@ knitr::kable(
 |:-------------------|--------:|---------:|-------:|
 | OLS                |  825.07 |     0.85 | 621.05 |
 | Poisson Regression |  681.56 |     0.90 | 502.37 |
-| Random Forest      | 1060.60 |     0.75 | 742.33 |
-| Boosted Trees      |  913.87 |     0.82 | 683.62 |
+| Random Forest      | 1089.57 |     0.74 | 754.85 |
+| Boosted Trees      |  917.21 |     0.81 | 681.99 |
 
 Table 4: Test Set Performance Summary
 

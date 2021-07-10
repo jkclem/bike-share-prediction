@@ -13,11 +13,13 @@ params:
 
 # Introduction
 
-Our data set contains daily bike rental counts, information about the weather on a given day, when the day was (date, season, month, and year), and whether the day was a holiday or working day for the Capital Bikeshare system in Washington D.C. in 2011 and 2012. We want to predict the total number of rentals on a given weekday (here `r params$dayName`). The data set breaks the rides down into casual and registered riders, but we will predict the total number of bike rentals (`cnt`).
+This project aims at analyzing and creating predictive models on "Bike Sharing Dataset" at ["UCI Machine Learning Repository"](https://archive.ics.uci.edu/ml/datasets/Bike+Sharing+Dataset#) Where core data set is related to two-year log (2011, 2012) from Capital Bikeshare system, Washington D.C. The data set mainly contains information about the weather on a given day, when the day was (date, season, month, and year), and whether the day was a holiday or working day as well as bike rental counts including casual, registered riders and total number of bike rentals (`cnt`).
 
-We will make our predictions using the weather variables, the season, and the year. The weather related variables are `temp` (normalized temperature), `hum` (normalized humidity), `windspeed` (normalized wind speed), and `weathersit`. The variable `weathersit` is a factor going from 1 to 4, with 1 being nice weather and progressing to 4, which covers severe weather conditions. The `season` variable is a factor for the four seasons, and `yr` is the year.
+In our study the total number of rentals on a given weekday (here `r params$dayName`) will act as the response,  which makes more sense for bike rental business compared to only the casual or the registered . Explanatory variables comprise the weather variables, the season, and the year. The weather related variables are `temp` (normalized temperature), `hum` (normalized humidity), `windspeed` (normalized wind speed), and `weathersit`. The variable `weathersit` is a factor going from 1 to 4, with 1 being nice weather and progressing to 4, which covers severe weather conditions. The `season` variable is a factor for the four seasons, and `yr` is the year.
 
-To perform our analysis, we will:
+We analyze the data using plots and tables to see the distribution of bike rentals, the weather situation of different seasons and construct different models (two linear and two tree models) to predict bike rental numbers affected by `season`, `yr` and weather situations represented by `temp`,`hum` and`windspeed`, compare those models and identify the best one. 
+
+The main steps includes:
 
 - load in the required packages
 - read in the data and subset for `r params$dayName`s and split into training and testings sets
@@ -45,8 +47,7 @@ bikeDay <- read_csv("./Bike-Sharing-Dataset/day.csv")
 bikeDay <- filter(bikeDay, weekday == params$weekday)
 ```
 
-Some of the variables, namely, `season`, `mnth`, `holiday`, `workingday`, and `weathersit` are categorical, but are stored numerically. Before proceeding with
-the analysis, we are converting them to `factor` data types.
+Some of the variables, namely, `season`, `mnth`, `holiday`, `workingday`, and `weathersit` are categorical, but are stored numerically. Before proceeding with the analysis, we are converting them to `factor` data types.
 
 ```{r}
 # Convert categorical variables stored numerically to factors.
@@ -101,8 +102,8 @@ plot1
 Next, let's examine the numeric variables related to weather: temperature, humidity, and wind speed. Below are the means and standard deviations for each of these variables by season.
 
 ```{r}
-# Find the means and standard deviations of temperature, humidity and windspeed
-# by season.
+# Find the means and standard deviations of temperature, humidity and windspeed by season.
+# Note that normalized data are converted back into original data using following formulas.
 seasonalSummary <- bikeTrain %>% 
   group_by(season) %>% 
   summarise(
@@ -292,7 +293,7 @@ linMod1 <- train(
 
 ### Linear Model 2 (Poisson Regression)
 
-In our second model, we assume the same combination of variables and any quadratic effects are modeling a poisson process. This assumption is based on bike rentals being a count and our count occurs in a set amount of time (a single day). Our model for the $\lambda$ parameter of the Poisson distribution is:
+In our second linear model, poisson process is applied to the same combination of variables and any quadratic effects.Poisson regression model is one of generalized linear models ($g(\mu) =\beta_0+\beta_1x_1+\beta_2x_2+...+\beta_px_p$ where $\mu$ denotes the mean corresponding to x sets.) for modeling count data.  Because bike rentals being a count and our count occurs in a set amount of time (a single day), it is reasonable to use poisson regression for modeling here. . Our model for the $\lambda$ parameter of the Poisson distribution is:
 
 $\lambda_i = \beta_0 + \beta_1\text{temp}_i + \beta_2\text{temp}_i^2 + \beta_3\text{wind speed}_i + \beta_4\text{wind speed}_i^2 + \beta_5\text{humidity}_i + \beta_6\text{humidity}_i^2 + \beta_7\text{Summer}_i +\beta_8\text{Fall}_i + \beta_9\text{Winter}_i + \beta_{10}\text{year}_i + \epsilon_i$
 
