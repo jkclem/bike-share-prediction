@@ -136,7 +136,7 @@ plot1 <- ggplot(bikeTrain, aes(x=cnt)) +
 plot1
 ```
 
-![](Reports/Sunday_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](Reports/Sunday_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 Next, let’s examine the numeric variables related to weather:
 temperature, humidity, and wind speed. Below are the means and standard
@@ -212,7 +212,7 @@ plot4 <- ggplot(bikeTrain, aes(x=season, y=windspeed*67,
 plot_grid(plot2, plot3, plot4)
 ```
 
-![](Reports/Sunday_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](Reports/Sunday_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 Now let’s examine the counts of weather situation by season.
 
@@ -279,7 +279,7 @@ plot8 <- ggplot(bikeTrain, aes(x=season, y=cnt, color=season)) +
 plot_grid(plot5, plot6, plot7, plot8)
 ```
 
-![](Reports/Sunday_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+![](Reports/Sunday_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
 
 Finally, let’s examine the distributions of bike rentals by weather
 situation and year.
@@ -310,7 +310,7 @@ plot10 <- ggplot(bikeTrain, aes(as.factor(yr+2011), cnt,
 plot_grid(plot9, plot10)
 ```
 
-![](Reports/Sunday_files/figure-gfm/unnamed-chunk-17-1.png)<!-- -->
+![](Reports/Sunday_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 We now have an idea of how our predictive features relate to the number
 of bike rentals, so we are ready to move onto modeling.
@@ -554,15 +554,15 @@ knitr::kable(
 
 |                    |   RMSE | Rsquared |    MAE |
 |:-------------------|-------:|---------:|-------:|
-| OLS                | 987.56 |     0.79 | 695.96 |
-| Poisson Regression | 719.83 |     0.85 | 541.12 |
-| Random Forest      | 896.88 |     0.79 | 713.81 |
-| Boosted Trees      | 740.65 |     0.86 | 586.81 |
+| OLS                | 950.11 |     0.79 | 670.60 |
+| Poisson Regression | 706.01 |     0.87 | 538.70 |
+| Random Forest      | 894.71 |     0.80 | 698.52 |
+| Boosted Trees      | 706.47 |     0.87 | 570.74 |
 
 Table 3: Repeated k-folds CV Performance Summary
 
 The best performing model in repeated k-folds CV is the Poisson
-Regression with an RMSE of 719.83. Usually, we would pick the best
+Regression with an RMSE of 706.01. Usually, we would pick the best
 performing model here to test on the testing data, but we will compare
 them all this time.
 
@@ -608,8 +608,8 @@ knitr::kable(
 |:-------------------|--------:|---------:|-------:|
 | OLS                |  916.46 |     0.78 | 740.66 |
 | Poisson Regression |  902.80 |     0.78 | 684.75 |
-| Random Forest      | 1224.27 |     0.56 | 944.31 |
-| Boosted Trees      |  947.78 |     0.75 | 720.48 |
+| Random Forest      | 1225.08 |     0.56 | 949.34 |
+| Boosted Trees      |  938.47 |     0.75 | 730.57 |
 
 Table 4: Test Set Performance Summary
 

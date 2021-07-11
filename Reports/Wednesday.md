@@ -554,15 +554,15 @@ knitr::kable(
 
 |                    |   RMSE | Rsquared |    MAE |
 |:-------------------|-------:|---------:|-------:|
-| OLS                | 715.33 |     0.88 | 574.10 |
-| Poisson Regression | 669.40 |     0.90 | 528.18 |
-| Random Forest      | 921.51 |     0.82 | 706.58 |
-| Boosted Trees      | 756.19 |     0.86 | 605.77 |
+| OLS                | 767.74 |     0.87 | 607.32 |
+| Poisson Regression | 711.15 |     0.88 | 557.25 |
+| Random Forest      | 886.85 |     0.82 | 680.82 |
+| Boosted Trees      | 729.44 |     0.88 | 577.15 |
 
 Table 3: Repeated k-folds CV Performance Summary
 
 The best performing model in repeated k-folds CV is the Poisson
-Regression with an RMSE of 669.4. Usually, we would pick the best
+Regression with an RMSE of 711.15. Usually, we would pick the best
 performing model here to test on the testing data, but we will compare
 them all this time.
 
@@ -608,8 +608,8 @@ knitr::kable(
 |:-------------------|--------:|---------:|-------:|
 | OLS                |  825.07 |     0.85 | 621.05 |
 | Poisson Regression |  681.56 |     0.90 | 502.37 |
-| Random Forest      | 1089.57 |     0.74 | 754.85 |
-| Boosted Trees      |  917.21 |     0.81 | 681.99 |
+| Random Forest      | 1060.60 |     0.75 | 742.33 |
+| Boosted Trees      |  913.87 |     0.82 | 683.62 |
 
 Table 4: Test Set Performance Summary
 
