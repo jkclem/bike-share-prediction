@@ -8,11 +8,11 @@ John Clements and Jingjing Li
     Data](#reading-in-and-subsetting-the-data)
 -   [Data Exploration](#data-exploration)
 -   [Modeling](#modeling)
-    -   [Linear models](#linear-models)
+    -   [Linear Models](#linear-models)
         -   [Linear Model 1 (OLS)](#linear-model-1-ols)
         -   [Linear Model 2 (Poisson
             Regression)](#linear-model-2-poisson-regression)
-    -   [Ensemble Tree Models](#ensemble-tree-models)
+    -   [Tree-based Ensemble Models](#tree-based-ensemble-models)
         -   [Random Forest](#random-forest)
         -   [Boosted Trees](#boosted-trees)
     -   [Comparing the Models](#comparing-the-models)
@@ -140,7 +140,8 @@ plot1
 
 Next, let’s examine the numeric variables related to weather:
 temperature, humidity, and wind speed. Below are the means and standard
-deviations for each of these variables by season.
+deviations for each of these variables by season. This is one way of
+measuring the central tendency and spread of the distributions.
 
 ``` r
 # Find the means and standard deviations of temperature, humidity and windspeed by season.
@@ -214,7 +215,9 @@ plot_grid(plot2, plot3, plot4)
 
 ![](Saturday_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
-Now let’s examine the counts of weather situation by season.
+Now let’s examine the counts of weather situation by season to see if
+some seasons tend to have better or worse weather compared to the
+others.
 
 ``` r
 # Compare weather situation counts for the four seasons.
@@ -239,7 +242,45 @@ Table 2: Weather Situation by Season
 
 Although the relationships between seasons and numeric weather measures
 are interesting, we want to predict bike rentals. So now we look at how
-our numeric weather measures and seasons relate to bike rentals.
+our weather variables and seasons relate to bike rentals.
+
+We start with the mean and standard deviation of the total daily bike
+rentals in each season to look for seasonal differences in the number
+and variability of daily bike rentals.
+
+``` r
+# Find the means and standard deviations of temperature, humidity and windspeed by season.
+# Note that normalized data are converted back into original data using following formulas.
+seasonalSummaryCnt <- bikeTrain %>% 
+  group_by(season) %>% 
+  summarise(
+    avgCnt = mean(cnt), sdtemp = sd(cnt)
+    )
+
+# Print out the table.
+knitr::kable(
+  seasonalSummaryCnt,
+  col.names=c("Season", 
+              "Daily Rentals Mean", "Daily Rentals Std. Dev."),
+  digits=2,
+  caption=paste0("Table 2: Means and Standard Deviations Daily Rides by ",
+                 "season")
+)
+```
+
+| Season | Daily Rentals Mean | Daily Rentals Std. Dev. |
+|:-------|-------------------:|------------------------:|
+| Spring |            2307.53 |                  973.24 |
+| Summer |            5249.84 |                 2210.85 |
+| Fall   |            5540.09 |                 1663.72 |
+| Winter |            4585.94 |                 2046.11 |
+
+Table 2: Means and Standard Deviations Daily Rides by season
+
+Next we look at scatter plots of total daily rentals vs. the numeric
+weather measures with quadratic regression lines over-layed.
+Additionally, we create box plots by season to visually inspect the
+differences in bike rentals by season.
 
 ``` r
 ###
@@ -279,10 +320,11 @@ plot8 <- ggplot(bikeTrain, aes(x=season, y=cnt, color=season)) +
 plot_grid(plot5, plot6, plot7, plot8)
 ```
 
-![](Saturday_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+![](Saturday_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
-Finally, let’s examine the distributions of bike rentals by weather
-situation and year.
+Finally, we examine the distributions of bike rentals by weather
+situation and year. We can tell if the distribution of bike rentals
+varies by weather conditions or by year.
 
 ``` r
 ###
@@ -310,7 +352,7 @@ plot10 <- ggplot(bikeTrain, aes(as.factor(yr+2011), cnt,
 plot_grid(plot9, plot10)
 ```
 
-![](Saturday_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](Saturday_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 We now have an idea of how our predictive features relate to the number
 of bike rentals, so we are ready to move onto modeling.
@@ -319,7 +361,7 @@ of bike rentals, so we are ready to move onto modeling.
 
 We want to predict bike rental demand in a given day conditional on
 weather-related variables, the season, and the year. These can be known
-*a priori* (assuming a weather forecast for the next day is fairly
+*a priori* (assuming a weather forecast for the next day is very
 accurate). We will try linear and ensemble modeling approaches.
 
 ``` r
@@ -333,7 +375,18 @@ trCntrl <- trainControl(method="repeatedcv", number=k, repeats=repeats)
 
 We are doing 5-folds CV with 3 repeats.
 
-## Linear models
+## Linear Models
+
+Linear regression models a dependent variable as a function of a set of
+independent variables that is linear in its parameters. The most
+widely-known linear regression technique is ordinary least squares
+([OLS](https://en.wikipedia.org/wiki/Ordinary_least_squares)), which
+assumes normally distributed errors. **OLS** is a special case of the
+generalized linear model
+([GLM](https://en.wikipedia.org/wiki/Generalized_linear_model)), which
+allows for the errors to follow non-normal distributions. We will try
+both an **OLS** model and a **GLM**, with the same variables and
+transformations.
 
 ### Linear Model 1 (OLS)
 
@@ -410,13 +463,14 @@ linMod2 <- train(
   )
 ```
 
-## Ensemble Tree Models
+## Tree-based Ensemble Models
 
 Tree-based ensemble methods are very popular in applied machine learning
-due to their ability to model non-linear and interaction effects. Here
-we try the two most popular ensemble methods: random forests and
-gradient boosted trees. We also perform a grid search in our repeated
-k-folds CV to tune our models for the best hyper-parameters.
+due to their ability to model non-linear and interaction effects without
+explicit direction to do so. Here we try the two most popular ensemble
+methods: random forests and gradient boosted trees. We also perform a
+grid search in our repeated k-folds CV to tune our models for the best
+hyper-parameters.
 
 ### Random Forest
 
