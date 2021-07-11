@@ -11,6 +11,10 @@ params:
   dayName: dayName
 ---
 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
 # Introduction
 
 This project aims at analyzing and creating predictive models on "Bike Sharing Dataset" at ["UCI Machine Learning Repository"](https://archive.ics.uci.edu/ml/datasets/Bike+Sharing+Dataset#) Where core data set is related to two-year log (2011, 2012) from Capital Bikeshare system, Washington D.C. The data set mainly contains information about the weather on a given day, when the day was (date, season, month, and year), and whether the day was a holiday or working day as well as bike rental counts including casual, registered riders and total number of bike rentals (`cnt`).
