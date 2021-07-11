@@ -12,7 +12,7 @@ The following packages are required for this project:
 - `tidyverse`: general data manipulation and plotting
 - `cowplot`: plotting in grids
 - `caret`: testing and making machine learning models
-- `rmarkdown`: rendering Rmd files as HTML files
+- `rmarkdown`: rendering Rmd file output files
 
 ## Output Files
 
@@ -36,14 +36,18 @@ weekdayList <- list("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday",
 # Loop through the weekday indexes going from Sunday to Saturday.
 for(weekday in c(0,1,2,3,4,5,6)){
   # Render Analysis.Rmd file...
-  rmarkdown::render("Analysis.Rmd",
-                    # and put the output in the Reports folder naming the file
-                    # as the corresponding weekday by adding 1 to the id to get
-                    # the weekday name for the file name...
-                    output_file = paste0("Reports/", 
-                                         weekdayList[[weekday+1]], 
-                                         ".html"),
-                    # and pass the weekday id as the weekday parameter.
-                    params=list(weekday=weekday,
-                                dayName=weekdayList[[weekday+1]]))
+  rmarkdown::render(
+    "Analysis.Rmd",
+    # and put the output in the Reports folder naming the file as the 
+    # corresponding weekday by adding 1 to the id to get the weekday name for
+    # the file name...
+    output_file = paste0("Reports/", weekdayList[[weekday+1]]),
+    # and pass the weekday id as the "weekday" parameter and the name of the 
+    # weekday as the "dayName" parameter..
+    params=list(
+      weekday=weekday,
+      dayName=weekdayList[[weekday+1]]
+      )
+    )
+}
 ```
