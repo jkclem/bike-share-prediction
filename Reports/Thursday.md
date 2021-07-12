@@ -136,7 +136,7 @@ plot1 <- ggplot(bikeTrain, aes(x=cnt)) +
 plot1
 ```
 
-![](Reports/Thursday_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](../Reports/Thursday_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 Next, let’s examine the numeric variables related to weather:
 temperature, humidity, and wind speed. Below are the means and standard
@@ -213,7 +213,7 @@ plot4 <- ggplot(bikeTrain, aes(x=season, y=windspeed*67,
 plot_grid(plot2, plot3, plot4)
 ```
 
-![](Reports/Thursday_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](../Reports/Thursday_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 Now let’s examine the counts of weather situation by season to see if
 some seasons tend to have better or worse weather compared to the
@@ -320,7 +320,7 @@ plot8 <- ggplot(bikeTrain, aes(x=season, y=cnt, color=season)) +
 plot_grid(plot5, plot6, plot7, plot8)
 ```
 
-![](Reports/Thursday_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
+![](../Reports/Thursday_files/figure-gfm/unnamed-chunk-10-1.png)<!-- -->
 
 Finally, we examine the distributions of bike rentals by weather
 situation and year. We can tell if the distribution of bike rentals
@@ -352,7 +352,7 @@ plot10 <- ggplot(bikeTrain, aes(as.factor(yr+2011), cnt,
 plot_grid(plot9, plot10)
 ```
 
-![](Reports/Thursday_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
+![](../Reports/Thursday_files/figure-gfm/unnamed-chunk-11-1.png)<!-- -->
 
 We now have an idea of how our predictive features relate to the number
 of bike rentals, so we are ready to move onto modeling.
