@@ -13,7 +13,7 @@ params:
 
 ```{r setup, include=FALSE}
 # Define the relative path to the images.
-imgsPath <- paste0("../Reports/", params$dayName, "_files/figure-gfm/")
+imgsPath <- paste0("Reports/", params$dayName, "_files/figure-gfm/")
 
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(fig.path=imgsPath)
